@@ -22,5 +22,75 @@
 /* Make sure main content takes full width */
 .mantine-AppShell-main {
   width: 100%;
-  padding: 1.5rem;
+  transition: padding-left 300ms ease, padding-right 300ms ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mantine-AppShell-navbar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Improve NavLink styling */
+.mantine-NavLink-root {
+  border-radius: 8px;
+  margin-bottom: 4px;
+  transition: all 200ms ease;
+}
+
+.mantine-NavLink-root:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Active NavLink styling */
+.mantine-NavLink-root[data-active='true'] {
+  font-weight: 600;
+}
+
+/* Improve card and paper styling */
+.mantine-Card-root,
+.mantine-Paper-root {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.mantine-Card-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Improve button styling */
+.mantine-Button-root {
+  transition: all 200ms ease;
+}
+
+/* Improve form controls */
+.mantine-TextInput-input,
+.mantine-PasswordInput-input,
+.mantine-Select-input,
+.mantine-Textarea-input,
+.mantine-NumberInput-input {
+  transition: border-color 200ms ease;
+}
+
+/* Improve table styling */
+.mantine-Table-root {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.mantine-Table-root th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.mantine-Table-root tr {
+  transition: background-color 200ms ease;
+}
+
+.mantine-Table-root tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
 }

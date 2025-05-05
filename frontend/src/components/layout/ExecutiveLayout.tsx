@@ -8,7 +8,10 @@ interface ExecutiveLayoutProps {
 
 export function ExecutiveLayout({ children }: ExecutiveLayoutProps) {
   return (
-    <DashboardLayout sidebar={<ExecutiveSidebar />}>
+    <DashboardLayout
+      sidebar={<ExecutiveSidebar />}
+      title="PharmaTrack Executive"
+    >
       {children}
     </DashboardLayout>
   );

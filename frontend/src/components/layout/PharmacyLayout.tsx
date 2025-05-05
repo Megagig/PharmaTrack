@@ -8,7 +8,7 @@ interface PharmacyLayoutProps {
 
 export function PharmacyLayout({ children }: PharmacyLayoutProps) {
   return (
-    <DashboardLayout sidebar={<PharmacySidebar />}>
+    <DashboardLayout sidebar={<PharmacySidebar />} title="PharmaTrack Pharmacy">
       {children}
     </DashboardLayout>
   );
