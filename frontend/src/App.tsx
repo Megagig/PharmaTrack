@@ -9,7 +9,7 @@ function App() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate('/');
       return;
     }
 
@@ -17,7 +17,6 @@ function App() {
     if (user?.role === 'EXECUTIVE' || user?.role === 'ADMIN') {
       navigate('/executive/dashboard');
     } else if (user?.role === 'PHARMACY') {
-      // This would redirect to pharmacy dashboard when implemented
       navigate('/pharmacy/dashboard');
     }
   }, [isAuthenticated, user, navigate]);
