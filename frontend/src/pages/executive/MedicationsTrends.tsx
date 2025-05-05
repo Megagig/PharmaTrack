@@ -8,6 +8,9 @@ import {
   Group,
   LoadingOverlay,
   Alert,
+  Button,
+  Menu,
+  rem,
 } from '@mantine/core';
 import {
   BarChart,
@@ -85,8 +88,10 @@ export function MedicationsTrends() {
         const uniqueWards = new Set<string>();
         pharmacies.forEach((pharmacy) => uniqueWards.add(pharmacy.ward));
         setWards(['All Wards', ...Array.from(uniqueWards)]);
-      } catch (error: any) {
-        setError(error.response?.data?.message || 'Failed to load data');
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to load data';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -229,6 +234,49 @@ export function MedicationsTrends() {
     ];
   };
 
+  // Function to download the exported file
+  const handleExport = async (format: 'detailed' | 'summary') => {
+    try {
+      setLoading(true);
+
+      // Calculate date range based on time filter
+      const endDate = new Date();
+      const startDate = new Date();
+
+      if (timeFilter === 'Last Month') {
+        startDate.setMonth(endDate.getMonth() - 1);
+      } else if (timeFilter === 'Last 3 Months') {
+        startDate.setMonth(endDate.getMonth() - 3);
+      } else if (timeFilter === 'Last 6 Months') {
+        startDate.setMonth(endDate.getMonth() - 6);
+      } else if (timeFilter === 'Last Year') {
+        startDate.setFullYear(endDate.getFullYear() - 1);
+      }
+
+      const blob = await reportService.exportReports(
+        startDate,
+        endDate,
+        format
+      );
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `medications-trends-${format}-${
+        new Date().toISOString().split('T')[0]
+      }.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to export data';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const topMedicationsData = prepareTopMedicationsData();
   const ailmentsData = prepareAilmentsData();
   const adverseReactionsData = prepareAdverseReactionsData();
@@ -236,9 +284,29 @@ export function MedicationsTrends() {
 
   return (
     <div>
-      <Title order={2} mb="lg">
-        Medications & Ailments Trends
-      </Title>
+      <Group justify="space-between" mb="lg">
+        <Title order={2}>Medications & Ailments Trends</Title>
+        <Menu shadow="md" position="bottom-end">
+          <Menu.Target>
+            <Button>
+              <Group gap="xs">
+                <span>Export Data</span>
+                <span style={{ fontSize: rem(16), marginTop: '2px' }}>▼</span>
+              </Group>
+            </Button>
+          </Menu.Target>
+
+          <Menu.Dropdown>
+            <Menu.Label>Choose export format</Menu.Label>
+            <Menu.Item onClick={() => handleExport('detailed')}>
+              Detailed Report
+            </Menu.Item>
+            <Menu.Item onClick={() => handleExport('summary')}>
+              Summary by LGA
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </Group>
 
       {error && (
         <Alert color="red" mb="xl" withCloseButton onClose={() => setError('')}>
@@ -246,7 +314,7 @@ export function MedicationsTrends() {
         </Alert>
       )}
 
-      <Group mb="xl">
+      <Group gap="md" mb="xl">
         <Select
           label="Filter by LGA"
           placeholder="Select LGA"
@@ -365,7 +433,7 @@ export function MedicationsTrends() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {ageGroupData.map((entry, index) => (
+                    {ageGroupData.map((_, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}

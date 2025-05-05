@@ -131,4 +131,39 @@ export class ReportController {
       res.status(500).json({ message: error.message });
     }
   }
+
+  async exportReports(req: Request, res: Response): Promise<void> {
+    try {
+      const { startDate, endDate, format } = req.query;
+
+      if (!startDate || !endDate) {
+        res
+          .status(400)
+          .json({ message: 'Start date and end date are required' });
+        return;
+      }
+
+      const buffer = await reportService.exportToExcel(
+        new Date(startDate as string),
+        new Date(endDate as string),
+        format as 'detailed' | 'summary'
+      );
+
+      // Set headers for file download
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=reports-${
+          new Date().toISOString().split('T')[0]
+        }.xlsx`
+      );
+
+      res.send(buffer);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  }
 }

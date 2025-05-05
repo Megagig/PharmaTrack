@@ -21,6 +21,7 @@ const getReportsByWard =
   reportController.getReportsByWard.bind(reportController);
 const getReportsSummary =
   reportController.getReportsSummary.bind(reportController);
+const exportReports = reportController.exportReports.bind(reportController);
 
 // Create a new report (all authenticated users)
 router.post('/', authenticate, createReport);
@@ -80,6 +81,14 @@ router.get(
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
   getReportsSummary
+);
+
+// Export reports to Excel (only executives and admins)
+router.get(
+  '/export',
+  authenticate,
+  authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
+  exportReports
 );
 
 export default router;

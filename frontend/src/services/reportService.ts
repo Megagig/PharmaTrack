@@ -83,7 +83,10 @@ export const reportService = {
   },
 
   // Update report
-  updateReport: async (id: string, data: Partial<ReportCreateRequest>): Promise<Report> => {
+  updateReport: async (
+    id: string,
+    data: Partial<ReportCreateRequest>
+  ): Promise<Report> => {
     const response = await api.put<Report>(`/reports/${id}`, data);
     return response.data;
   },
@@ -101,7 +104,10 @@ export const reportService = {
   },
 
   // Get reports by date range
-  getReportsByDateRange: async (startDate: Date, endDate: Date): Promise<Report[]> => {
+  getReportsByDateRange: async (
+    startDate: Date,
+    endDate: Date
+  ): Promise<Report[]> => {
     const response = await api.get<Report[]>('/reports/date-range', {
       params: {
         startDate: startDate.toISOString(),
@@ -120,6 +126,23 @@ export const reportService = {
   // Get reports by LGA
   getReportsByLGA: async (lga: string): Promise<Report[]> => {
     const response = await api.get<Report[]>(`/reports/lga/${lga}`);
+    return response.data;
+  },
+
+  // Export reports to Excel
+  exportReports: async (
+    startDate: Date,
+    endDate: Date,
+    format: 'detailed' | 'summary' = 'detailed'
+  ): Promise<Blob> => {
+    const response = await api.get('/reports/export', {
+      params: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        format,
+      },
+      responseType: 'blob',
+    });
     return response.data;
   },
 };

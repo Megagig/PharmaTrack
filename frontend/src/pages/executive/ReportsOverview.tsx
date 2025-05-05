@@ -11,6 +11,8 @@ import {
   Alert,
   Group,
   Button,
+  Menu,
+  rem,
 } from '@mantine/core';
 import { pharmacyService } from '../../services/pharmacyService';
 import { reportService, Report } from '../../services/reportService';
@@ -49,10 +51,12 @@ export function ReportsOverview() {
         const uniqueLgas = new Set<string>();
         pharmacies.forEach((pharmacy) => uniqueLgas.add(pharmacy.lga));
         setLgas(['All LGAs', ...Array.from(uniqueLgas)]);
-      } catch (error: any) {
-        setError(
-          error.response?.data?.message || 'Failed to load reports data'
-        );
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Failed to load reports data';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -139,11 +143,73 @@ export function ReportsOverview() {
     return ['All Months', ...months];
   };
 
+  // Function to download the exported file
+  const handleExport = async (format: 'detailed' | 'summary') => {
+    try {
+      setLoading(true);
+
+      // Calculate date range based on selected time range
+      const endDate = new Date();
+      const startDate = new Date();
+      if (timeRange === '1month') {
+        startDate.setMonth(endDate.getMonth() - 1);
+      } else if (timeRange === '3months') {
+        startDate.setMonth(endDate.getMonth() - 3);
+      } else if (timeRange === '6months') {
+        startDate.setMonth(endDate.getMonth() - 6);
+      } else if (timeRange === '1year') {
+        startDate.setFullYear(endDate.getFullYear() - 1);
+      }
+
+      const blob = await reportService.exportReports(
+        startDate,
+        endDate,
+        format
+      );
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reports-${format}-${
+        new Date().toISOString().split('T')[0]
+      }.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to export reports';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
-      <Title order={2} mb="lg">
-        Reports Overview
-      </Title>
+      <Group justify="space-between" mb="lg">
+        <Title order={2}>Reports Overview</Title>
+        <Menu shadow="md" position="bottom-end">
+          <Menu.Target>
+            <Button>
+              <Group gap="xs">
+                <span>Export Data</span>
+                <span style={{ fontSize: rem(16), marginTop: '2px' }}>▼</span>
+              </Group>
+            </Button>
+          </Menu.Target>
+
+          <Menu.Dropdown>
+            <Menu.Label>Choose export format</Menu.Label>
+            <Menu.Item onClick={() => handleExport('detailed')}>
+              Detailed Report
+            </Menu.Item>
+            <Menu.Item onClick={() => handleExport('summary')}>
+              Summary by LGA
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </Group>
 
       {error && (
         <Alert color="red" mb="xl" withCloseButton onClose={() => setError('')}>
@@ -202,7 +268,7 @@ export function ReportsOverview() {
         </SimpleGrid>
 
         <Paper withBorder p="md" mt="xl">
-          <Group position="apart" mb="md">
+          <Group justify="space-between" mb="md">
             <Title order={3}>Data Visualization</Title>
             <Select
               value={timeRange}
