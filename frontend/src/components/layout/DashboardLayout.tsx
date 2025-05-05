@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { AppShell } from '@mantine/core';
+import { AppShell, Group, Box } from '@mantine/core';
+import { NotificationsPanel } from '../common/NotificationsPanel';
 
 interface DashboardLayoutProps {
   sidebar: ReactNode;
@@ -10,14 +11,19 @@ export function DashboardLayout({ sidebar, children }: DashboardLayoutProps) {
   return (
     <AppShell
       navbar={{ width: 280, breakpoint: 'sm' }}
+      header={{ height: 60 }}
       padding="md"
     >
-      <AppShell.Navbar p="md">
-        {sidebar}
-      </AppShell.Navbar>
-      
+      <AppShell.Header p="md">
+        <Group justify="flex-end">
+          <NotificationsPanel />
+        </Group>
+      </AppShell.Header>
+
+      <AppShell.Navbar p="md">{sidebar}</AppShell.Navbar>
+
       <AppShell.Main>
-        {children}
+        <Box pt="md">{children}</Box>
       </AppShell.Main>
     </AppShell>
   );

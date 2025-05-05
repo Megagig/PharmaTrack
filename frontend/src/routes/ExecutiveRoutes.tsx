@@ -9,19 +9,20 @@ import { MedicationsTrends } from '../pages/executive/MedicationsTrends';
 import { PublicHealthActivities } from '../pages/executive/PublicHealthActivities';
 import { UserManagement } from '../pages/executive/UserManagement';
 import { Settings } from '../pages/executive/Settings';
+import { AuditLogs } from '../pages/common/AuditLogs';
 import { useAuthStore } from '../store/authStore';
 
 const ExecutiveRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useAuthStore();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
-  
+
   if (user?.role !== 'EXECUTIVE' && user?.role !== 'ADMIN') {
     return <Navigate to="/" />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -122,6 +123,16 @@ export const executiveRoutes: RouteObject[] = [
       <ExecutiveRoute>
         <ExecutiveLayout>
           <Settings />
+        </ExecutiveLayout>
+      </ExecutiveRoute>
+    ),
+  },
+  {
+    path: '/executive/audit-logs',
+    element: (
+      <ExecutiveRoute>
+        <ExecutiveLayout>
+          <AuditLogs />
         </ExecutiveLayout>
       </ExecutiveRoute>
     ),

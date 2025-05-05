@@ -2,7 +2,7 @@ import { NavLink, Stack, Title, Divider, Button } from '@mantine/core';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
-export function ExecutiveSidebar() {
+export function PharmacySidebar() {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
 
@@ -15,77 +15,56 @@ export function ExecutiveSidebar() {
     <Stack h="100%" justify="space-between">
       <Stack gap="xs">
         <Title order={4} ta="center" py="md">
-          PharmaTrack Executive
+          PharmaTrack Pharmacy
         </Title>
         <Divider />
 
         <NavLink
           component={Link}
-          to="/executive/dashboard"
+          to="/pharmacy/dashboard"
           label="Dashboard"
           variant="filled"
         />
 
         <NavLink
           component={Link}
-          to="/executive/pharmacies"
-          label="View All Pharmacies"
+          to="/pharmacy/submit-report"
+          label="Submit Monthly Report"
           variant="filled"
         />
 
         <NavLink
           component={Link}
-          to="/executive/reports-overview"
-          label="Reports Overview"
+          to="/pharmacy/my-reports"
+          label="My Previous Reports"
           variant="filled"
         />
 
         <NavLink
           component={Link}
-          to="/executive/monthly-reports"
-          label="View Monthly Reports"
+          to="/pharmacy/stock"
+          label="Stock Management"
           variant="filled"
         />
 
         <NavLink
           component={Link}
-          to="/executive/compliance"
-          label="Compliance Monitoring"
+          to="/pharmacy/profile"
+          label="Profile"
           variant="filled"
         />
 
         <NavLink
           component={Link}
-          to="/executive/medications-trends"
-          label="Medications/Ailments Trends"
-          variant="filled"
-        />
-
-        <NavLink
-          component={Link}
-          to="/executive/public-health"
-          label="Public Health Activities"
-          variant="filled"
-        />
-
-        <NavLink
-          component={Link}
-          to="/executive/user-management"
-          label="User Management"
-          variant="filled"
-        />
-
-        <NavLink
-          component={Link}
-          to="/executive/audit-logs"
+          to="/pharmacy/audit-logs"
           label="Audit Logs"
           variant="filled"
         />
 
         <NavLink
           component={Link}
-          to="/executive/settings"
-          label="Settings"
+          to="/pharmacy/support"
+          label="Help / Support"
           variant="filled"
         />
       </Stack>
