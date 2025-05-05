@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   TextInput,
@@ -22,6 +22,17 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { UserRole } from '../../store/authStore';
 import { PublicLayout } from '../../components/layout/PublicLayout';
+import { PasswordStrengthIndicator } from '../../components/forms/PasswordStrengthIndicator';
+import {
+  validateEmail,
+  validatePassword,
+  validatePasswordMatch,
+  validateRequired,
+  validatePhoneNumber,
+  validateLicenseNumber,
+  ValidationResult,
+} from '../../utils/formValidation';
+import { AnimatedElement } from '../../components/animations/AnimatedElement';
 
 export function Register() {
   const navigate = useNavigate();
@@ -30,7 +41,7 @@ export function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState<UserRole>('PHARMACY');
-  
+
   // Form fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,47 +54,171 @@ export function Register() {
   const [licenseNumber, setLicenseNumber] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
+  // Form validation
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
+  const [pharmacyNameError, setPharmacyNameError] = useState('');
+  const [pharmacyAddressError, setPharmacyAddressError] = useState('');
+  const [pharmacyPhoneError, setPharmacyPhoneError] = useState('');
+  const [licenseNumberError, setLicenseNumberError] = useState('');
+
+  // Validate email on change
+  useEffect(() => {
+    if (email) {
+      const result = validateEmail(email);
+      setEmailError(result.errorMessage);
+    } else {
+      setEmailError('');
+    }
+  }, [email]);
+
+  // Validate password on change
+  useEffect(() => {
+    if (password) {
+      const result = validatePassword(password);
+      setPasswordError(result.errorMessage);
+    } else {
+      setPasswordError('');
+    }
+  }, [password]);
+
+  // Validate confirm password on change
+  useEffect(() => {
+    if (confirmPassword) {
+      const result = validatePasswordMatch(password, confirmPassword);
+      setConfirmPasswordError(result.errorMessage);
+    } else {
+      setConfirmPasswordError('');
+    }
+  }, [confirmPassword, password]);
+
+  // Validate phone number on change
+  useEffect(() => {
+    if (pharmacyPhone) {
+      const result = validatePhoneNumber(pharmacyPhone);
+      setPharmacyPhoneError(result.errorMessage);
+    } else {
+      setPharmacyPhoneError('');
+    }
+  }, [pharmacyPhone]);
+
+  // Validate license number on change
+  useEffect(() => {
+    if (licenseNumber) {
+      const result = validateLicenseNumber(licenseNumber);
+      setLicenseNumberError(result.errorMessage);
+    } else {
+      setLicenseNumberError('');
+    }
+  }, [licenseNumber]);
+
   const nextStep = () => {
     if (active === 0) {
       // Validate first step
-      if (!email || !password || !confirmPassword || !firstName || !lastName) {
-        setError('Please fill in all required fields');
-        return;
+      let hasErrors = false;
+
+      // Validate required fields
+      if (!firstName) {
+        setFirstNameError('First name is required');
+        hasErrors = true;
       }
-      
-      if (password !== confirmPassword) {
-        setError('Passwords do not match');
-        return;
+
+      if (!lastName) {
+        setLastNameError('Last name is required');
+        hasErrors = true;
       }
-      
-      if (password.length < 8) {
-        setError('Password must be at least 8 characters long');
+
+      // Validate email
+      const emailValidation = validateEmail(email);
+      if (!email || !emailValidation.isValid) {
+        setEmailError(emailValidation.errorMessage || 'Email is required');
+        hasErrors = true;
+      }
+
+      // Validate password
+      const passwordValidation = validatePassword(password);
+      if (!password || !passwordValidation.isValid) {
+        setPasswordError(
+          passwordValidation.errorMessage || 'Password is required'
+        );
+        hasErrors = true;
+      }
+
+      // Validate password match
+      const passwordMatchValidation = validatePasswordMatch(
+        password,
+        confirmPassword
+      );
+      if (!confirmPassword || !passwordMatchValidation.isValid) {
+        setConfirmPasswordError(
+          passwordMatchValidation.errorMessage || 'Confirm password is required'
+        );
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
+        setError('Please correct the errors before proceeding');
         return;
       }
     }
-    
+
     if (active === 1 && userType === 'PHARMACY') {
       // Validate pharmacy details
-      if (!pharmacyName || !pharmacyAddress || !pharmacyPhone || !licenseNumber) {
-        setError('Please fill in all pharmacy details');
+      let hasErrors = false;
+
+      // Validate required fields
+      if (!pharmacyName) {
+        setPharmacyNameError('Pharmacy name is required');
+        hasErrors = true;
+      }
+
+      if (!pharmacyAddress) {
+        setPharmacyAddressError('Pharmacy address is required');
+        hasErrors = true;
+      }
+
+      // Validate phone number
+      const phoneValidation = validatePhoneNumber(pharmacyPhone);
+      if (!pharmacyPhone || !phoneValidation.isValid) {
+        setPharmacyPhoneError(
+          phoneValidation.errorMessage || 'Phone number is required'
+        );
+        hasErrors = true;
+      }
+
+      // Validate license number
+      const licenseValidation = validateLicenseNumber(licenseNumber);
+      if (!licenseNumber || !licenseValidation.isValid) {
+        setLicenseNumberError(
+          licenseValidation.errorMessage || 'License number is required'
+        );
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
+        setError('Please correct the errors before proceeding');
         return;
       }
     }
-    
+
     setError('');
     setActive((current) => (current < 2 ? current + 1 : current));
   };
 
-  const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
+  const prevStep = () =>
+    setActive((current) => (current > 0 ? current - 1 : current));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!agreeToTerms) {
       setError('You must agree to the Terms of Service and Privacy Policy');
       return;
     }
-    
+
     setError('');
     setLoading(true);
 
@@ -95,7 +230,9 @@ export function Register() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Navigate to login page after successful registration
-      navigate('/login', { state: { message: 'Registration successful! Please log in.' } });
+      navigate('/login', {
+        state: { message: 'Registration successful! Please log in.' },
+      });
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration');
     } finally {
@@ -111,49 +248,71 @@ export function Register() {
         </Title>
 
         <Paper withBorder shadow="md" p={{ base: 'md', sm: 30 }} radius="md">
-          <Stepper active={active} onStepClick={setActive} breakpoint="sm" mb="xl">
-            <Stepper.Step label="Account Details" description="Basic information">
+          <Stepper
+            active={active}
+            onStepClick={setActive}
+            breakpoint="sm"
+            mb="xl"
+          >
+            <Stepper.Step
+              label="Account Details"
+              description="Basic information"
+            >
               <Stack>
-                <Group grow>
+                <AnimatedElement type="fadeInUp" delay={0.1}>
+                  <Group grow>
+                    <TextInput
+                      label="First Name"
+                      placeholder="John"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      error={firstNameError}
+                    />
+                    <TextInput
+                      label="Last Name"
+                      placeholder="Doe"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      error={lastNameError}
+                    />
+                  </Group>
+                </AnimatedElement>
+
+                <AnimatedElement type="fadeInUp" delay={0.2}>
                   <TextInput
-                    label="First Name"
-                    placeholder="John"
+                    label="Email"
+                    placeholder="you@example.com"
                     required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    error={emailError}
                   />
-                  <TextInput
-                    label="Last Name"
-                    placeholder="Doe"
+                </AnimatedElement>
+
+                <AnimatedElement type="fadeInUp" delay={0.3}>
+                  <PasswordInput
+                    label="Password"
+                    placeholder="Create a strong password"
                     required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    error={passwordError}
                   />
-                </Group>
+                  <PasswordStrengthIndicator password={password} />
+                </AnimatedElement>
 
-                <TextInput
-                  label="Email"
-                  placeholder="you@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-
-                <PasswordInput
-                  label="Password"
-                  placeholder="Create a strong password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <PasswordInput
-                  label="Confirm Password"
-                  placeholder="Confirm your password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+                <AnimatedElement type="fadeInUp" delay={0.4}>
+                  <PasswordInput
+                    label="Confirm Password"
+                    placeholder="Confirm your password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    error={confirmPasswordError}
+                  />
+                </AnimatedElement>
 
                 <Stack mb="md">
                   <Text fw={500} size="sm">
@@ -172,133 +331,189 @@ export function Register() {
               </Stack>
             </Stepper.Step>
 
-            <Stepper.Step label="Organization Details" description="Your organization">
+            <Stepper.Step
+              label="Organization Details"
+              description="Your organization"
+            >
               {userType === 'PHARMACY' ? (
                 <Stack>
-                  <TextInput
-                    label="Pharmacy Name"
-                    placeholder="Community Pharmacy"
-                    required
-                    value={pharmacyName}
-                    onChange={(e) => setPharmacyName(e.target.value)}
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.1}>
+                    <TextInput
+                      label="Pharmacy Name"
+                      placeholder="Community Pharmacy"
+                      required
+                      value={pharmacyName}
+                      onChange={(e) => setPharmacyName(e.target.value)}
+                      error={pharmacyNameError}
+                    />
+                  </AnimatedElement>
 
-                  <TextInput
-                    label="Pharmacy Address"
-                    placeholder="123 Health Street, City"
-                    required
-                    value={pharmacyAddress}
-                    onChange={(e) => setPharmacyAddress(e.target.value)}
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.2}>
+                    <TextInput
+                      label="Pharmacy Address"
+                      placeholder="123 Health Street, City"
+                      required
+                      value={pharmacyAddress}
+                      onChange={(e) => setPharmacyAddress(e.target.value)}
+                      error={pharmacyAddressError}
+                    />
+                  </AnimatedElement>
 
-                  <TextInput
-                    label="Pharmacy Phone"
-                    placeholder="+1 (555) 123-4567"
-                    required
-                    value={pharmacyPhone}
-                    onChange={(e) => setPharmacyPhone(e.target.value)}
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.3}>
+                    <TextInput
+                      label="Pharmacy Phone"
+                      placeholder="08012345678"
+                      description="Nigerian format: 0801234XXXX or +2348012345XXX"
+                      required
+                      value={pharmacyPhone}
+                      onChange={(e) => setPharmacyPhone(e.target.value)}
+                      error={pharmacyPhoneError}
+                    />
+                  </AnimatedElement>
 
-                  <TextInput
-                    label="License Number"
-                    placeholder="PHR-12345"
-                    required
-                    value={licenseNumber}
-                    onChange={(e) => setLicenseNumber(e.target.value)}
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.4}>
+                    <TextInput
+                      label="PCN License Number"
+                      placeholder="PCN12345"
+                      required
+                      value={licenseNumber}
+                      onChange={(e) => setLicenseNumber(e.target.value)}
+                      error={licenseNumberError}
+                    />
+                  </AnimatedElement>
 
-                  <Select
-                    label="Pharmacy Type"
-                    placeholder="Select pharmacy type"
-                    data={[
-                      'Community Pharmacy',
-                      'Hospital Pharmacy',
-                      'Clinical Pharmacy',
-                      'Retail Pharmacy',
-                      'Other',
-                    ]}
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.5}>
+                    <Select
+                      label="Pharmacy Type"
+                      placeholder="Select pharmacy type"
+                      data={[
+                        'Community Pharmacy',
+                        'Hospital Pharmacy',
+                        'Clinical Pharmacy',
+                        'Retail Pharmacy',
+                        'Other',
+                      ]}
+                    />
+                  </AnimatedElement>
                 </Stack>
               ) : (
                 <Stack>
-                  <TextInput
-                    label="Organization Name"
-                    placeholder="Health Department"
-                    required
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.1}>
+                    <TextInput
+                      label="Organization Name"
+                      placeholder="Health Department"
+                      required
+                    />
+                  </AnimatedElement>
 
-                  <TextInput
-                    label="Department"
-                    placeholder="Pharmacy Oversight"
-                    required
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.2}>
+                    <TextInput
+                      label="Department"
+                      placeholder="Pharmacy Oversight"
+                      required
+                    />
+                  </AnimatedElement>
 
-                  <TextInput
-                    label="Position/Title"
-                    placeholder="Director"
-                    required
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.3}>
+                    <TextInput
+                      label="Position/Title"
+                      placeholder="Director"
+                      required
+                    />
+                  </AnimatedElement>
 
-                  <Select
-                    label="Access Level Requested"
-                    placeholder="Select access level"
-                    data={[
-                      'Regional Manager',
-                      'State Director',
-                      'National Administrator',
-                      'Analyst',
-                      'Other',
-                    ]}
-                  />
+                  <AnimatedElement type="fadeInUp" delay={0.4}>
+                    <Select
+                      label="Access Level Requested"
+                      placeholder="Select access level"
+                      data={[
+                        'Regional Manager',
+                        'State Director',
+                        'National Administrator',
+                        'Analyst',
+                        'Other',
+                      ]}
+                    />
+                  </AnimatedElement>
                 </Stack>
               )}
             </Stepper.Step>
 
             <Stepper.Step label="Confirmation" description="Review and submit">
               <Stack>
-                <Title order={4} mb="md">
-                  Review Your Information
-                </Title>
+                <AnimatedElement type="fadeInUp" delay={0.1}>
+                  <Title order={4} mb="md">
+                    Review Your Information
+                  </Title>
+                </AnimatedElement>
 
-                <Box mb="md">
-                  <Text fw={700}>Account Details</Text>
-                  <Text>
-                    {firstName} {lastName}
-                  </Text>
-                  <Text>{email}</Text>
-                  <Text>Account Type: {userType}</Text>
-                </Box>
+                <AnimatedElement type="fadeInUp" delay={0.2}>
+                  <Paper withBorder p="md" radius="md" mb="md">
+                    <Text fw={700} mb="xs">
+                      Account Details
+                    </Text>
+                    <Text>
+                      {firstName} {lastName}
+                    </Text>
+                    <Text>{email}</Text>
+                    <Text>Account Type: {userType}</Text>
+                  </Paper>
+                </AnimatedElement>
 
                 {userType === 'PHARMACY' && (
-                  <Box mb="md">
-                    <Text fw={700}>Pharmacy Details</Text>
-                    <Text>{pharmacyName}</Text>
-                    <Text>{pharmacyAddress}</Text>
-                    <Text>{pharmacyPhone}</Text>
-                    <Text>License: {licenseNumber}</Text>
-                  </Box>
+                  <AnimatedElement type="fadeInUp" delay={0.3}>
+                    <Paper withBorder p="md" radius="md" mb="md">
+                      <Text fw={700} mb="xs">
+                        Pharmacy Details
+                      </Text>
+                      <Text>{pharmacyName}</Text>
+                      <Text>{pharmacyAddress}</Text>
+                      <Text>{pharmacyPhone}</Text>
+                      <Text>License: {licenseNumber}</Text>
+                    </Paper>
+                  </AnimatedElement>
                 )}
 
-                <Checkbox
-                  label={
-                    <Text size="sm">
-                      I agree to the{' '}
-                      <Text component="a" href="/terms" c={theme.colors.blue[6]} inherit>
-                        Terms of Service
-                      </Text>{' '}
-                      and{' '}
-                      <Text component="a" href="/privacy" c={theme.colors.blue[6]} inherit>
-                        Privacy Policy
+                <AnimatedElement type="fadeInUp" delay={0.4}>
+                  <Checkbox
+                    label={
+                      <Text size="sm">
+                        I agree to the{' '}
+                        <Text
+                          component={Link}
+                          to="/terms"
+                          c={theme.colors.blue[6]}
+                          inherit
+                        >
+                          Terms of Service
+                        </Text>{' '}
+                        and{' '}
+                        <Text
+                          component={Link}
+                          to="/privacy"
+                          c={theme.colors.blue[6]}
+                          inherit
+                        >
+                          Privacy Policy
+                        </Text>
                       </Text>
-                    </Text>
-                  }
-                  checked={agreeToTerms}
-                  onChange={(e) => setAgreeToTerms(e.target.checked)}
-                />
+                    }
+                    checked={agreeToTerms}
+                    onChange={(e) => setAgreeToTerms(e.target.checked)}
+                  />
+                </AnimatedElement>
 
-                <Button fullWidth onClick={handleSubmit} loading={loading} mt="md">
-                  Complete Registration
-                </Button>
+                <AnimatedElement type="bounce" delay={0.5}>
+                  <Button
+                    fullWidth
+                    onClick={handleSubmit}
+                    loading={loading}
+                    mt="md"
+                    size="lg"
+                  >
+                    Complete Registration
+                  </Button>
+                </AnimatedElement>
               </Stack>
             </Stepper.Step>
           </Stepper>

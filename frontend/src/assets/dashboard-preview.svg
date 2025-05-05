@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800px" height="500px" viewBox="0 0 800 500" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Dashboard Preview</title>
+    <defs>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#2563EB" offset="0%"></stop>
+            <stop stop-color="#3B82F6" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-2">
+            <stop stop-color="#1E40AF" offset="0%"></stop>
+            <stop stop-color="#3B82F6" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-3">
+            <stop stop-color="#1E3A8A" offset="0%"></stop>
+            <stop stop-color="#3B82F6" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-4">
+            <stop stop-color="#2563EB" offset="0%"></stop>
+            <stop stop-color="#60A5FA" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Dashboard" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="#F8FAFC" x="0" y="0" width="800" height="500" rx="8"></rect>
+        
+        <!-- Header -->
+        <rect id="Header" fill="url(#linearGradient-1)" x="0" y="0" width="800" height="60" rx="8"></rect>
+        <rect id="Logo" fill="#FFFFFF" opacity="0.9" x="20" y="15" width="30" height="30" rx="4"></rect>
+        <text id="PharmaTrack" font-family="Arial-BoldMT, Arial" font-size="18" font-weight="bold" fill="#FFFFFF">
+            <tspan x="60" y="35">PharmaTrack</tspan>
+        </text>
+        <circle id="User" fill="#FFFFFF" opacity="0.9" cx="760" cy="30" r="15"></circle>
+        
+        <!-- Sidebar -->
+        <rect id="Sidebar" fill="#FFFFFF" x="0" y="60" width="200" height="440"></rect>
+        <rect id="SidebarItem1" fill="url(#linearGradient-2)" x="10" y="80" width="180" height="40" rx="4"></rect>
+        <text id="Dashboard" font-family="Arial" font-size="14" font-weight="normal" fill="#FFFFFF">
+            <tspan x="50" y="105">Dashboard</tspan>
+        </text>
+        <rect id="SidebarItem2" fill="#F1F5F9" x="10" y="130" width="180" height="40" rx="4"></rect>
+        <text id="Reports" font-family="Arial" font-size="14" font-weight="normal" fill="#64748B">
+            <tspan x="50" y="155">Reports</tspan>
+        </text>
+        <rect id="SidebarItem3" fill="#F1F5F9" x="10" y="180" width="180" height="40" rx="4"></rect>
+        <text id="Pharmacies" font-family="Arial" font-size="14" font-weight="normal" fill="#64748B">
+            <tspan x="50" y="205">Pharmacies</tspan>
+        </text>
+        <rect id="SidebarItem4" fill="#F1F5F9" x="10" y="230" width="180" height="40" rx="4"></rect>
+        <text id="Analytics" font-family="Arial" font-size="14" font-weight="normal" fill="#64748B">
+            <tspan x="50" y="255">Analytics</tspan>
+        </text>
+        <rect id="SidebarItem5" fill="#F1F5F9" x="10" y="280" width="180" height="40" rx="4"></rect>
+        <text id="Settings" font-family="Arial" font-size="14" font-weight="normal" fill="#64748B">
+            <tspan x="50" y="305">Settings</tspan>
+        </text>
+        
+        <!-- Main Content -->
+        <rect id="MainContent" fill="#F1F5F9" x="200" y="60" width="600" height="440"></rect>
+        
+        <!-- Dashboard Title -->
+        <text id="DashboardTitle" font-family="Arial-BoldMT, Arial" font-size="24" font-weight="bold" fill="#0F172A">
+            <tspan x="230" y="100">Executive Dashboard</tspan>
+        </text>
+        
+        <!-- Stats Cards -->
+        <rect id="Card1" fill="#FFFFFF" x="230" y="120" width="130" height="100" rx="8"></rect>
+        <rect id="Card2" fill="#FFFFFF" x="380" y="120" width="130" height="100" rx="8"></rect>
+        <rect id="Card3" fill="#FFFFFF" x="530" y="120" width="130" height="100" rx="8"></rect>
+        <rect id="Card4" fill="#FFFFFF" x="680" y="120" width="100" height="100" rx="8"></rect>
+        
+        <text id="Card1Title" font-family="Arial" font-size="12" font-weight="normal" fill="#64748B">
+            <tspan x="245" y="145">Total Pharmacies</tspan>
+        </text>
+        <text id="Card1Value" font-family="Arial-BoldMT, Arial" font-size="24" font-weight="bold" fill="#0F172A">
+            <tspan x="245" y="180">124</tspan>
+        </text>
+        
+        <text id="Card2Title" font-family="Arial" font-size="12" font-weight="normal" fill="#64748B">
+            <tspan x="395" y="145">Reports This Month</tspan>
+        </text>
+        <text id="Card2Value" font-family="Arial-BoldMT, Arial" font-size="24" font-weight="bold" fill="#0F172A">
+            <tspan x="395" y="180">87</tspan>
+        </text>
+        
+        <text id="Card3Title" font-family="Arial" font-size="12" font-weight="normal" fill="#64748B">
+            <tspan x="545" y="145">Compliance Rate</tspan>
+        </text>
+        <text id="Card3Value" font-family="Arial-BoldMT, Arial" font-size="24" font-weight="bold" fill="#0F172A">
+            <tspan x="545" y="180">76%</tspan>
+        </text>
+        
+        <text id="Card4Title" font-family="Arial" font-size="12" font-weight="normal" fill="#64748B">
+            <tspan x="695" y="145">Patients</tspan>
+        </text>
+        <text id="Card4Value" font-family="Arial-BoldMT, Arial" font-size="24" font-weight="bold" fill="#0F172A">
+            <tspan x="695" y="180">5.2K</tspan>
+        </text>
+        
+        <!-- Chart 1 -->
+        <rect id="Chart1" fill="#FFFFFF" x="230" y="240" width="340" height="240" rx="8"></rect>
+        <text id="Chart1Title" font-family="Arial-BoldMT, Arial" font-size="16" font-weight="bold" fill="#0F172A">
+            <tspan x="250" y="270">Monthly Reports Submitted</tspan>
+        </text>
+        
+        <!-- Bar Chart -->
+        <rect id="Bar1" fill="url(#linearGradient-3)" x="260" y="400" width="30" height="50" rx="4"></rect>
+        <rect id="Bar2" fill="url(#linearGradient-3)" x="300" y="380" width="30" height="70" rx="4"></rect>
+        <rect id="Bar3" fill="url(#linearGradient-3)" x="340" y="350" width="30" height="100" rx="4"></rect>
+        <rect id="Bar4" fill="url(#linearGradient-3)" x="380" y="320" width="30" height="130" rx="4"></rect>
+        <rect id="Bar5" fill="url(#linearGradient-3)" x="420" y="370" width="30" height="80" rx="4"></rect>
+        <rect id="Bar6" fill="url(#linearGradient-3)" x="460" y="390" width="30" height="60" rx="4"></rect>
+        
+        <line id="XAxis" stroke="#CBD5E1" stroke-width="1" x1="250" y1="450" x2="550" y2="450"></line>
+        <line id="YAxis" stroke="#CBD5E1" stroke-width="1" x1="250" y1="300" x2="250" y2="450"></line>
+        
+        <!-- Chart 2 -->
+        <rect id="Chart2" fill="#FFFFFF" x="590" y="240" width="190" height="240" rx="8"></rect>
+        <text id="Chart2Title" font-family="Arial-BoldMT, Arial" font-size="16" font-weight="bold" fill="#0F172A">
+            <tspan x="610" y="270">Top Medications</tspan>
+        </text>
+        
+        <!-- Pie Chart -->
+        <circle id="PieChart" fill="#F1F5F9" cx="685" cy="350" r="60"></circle>
+        <path d="M685,350 L685,290 A60,60 0 0,1 738,380 z" id="Slice1" fill="url(#linearGradient-4)"></path>
+        <path d="M685,350 L738,380 A60,60 0 0,1 685,410 z" id="Slice2" fill="#3B82F6"></path>
+        <path d="M685,350 L685,410 A60,60 0 0,1 632,320 z" id="Slice3" fill="#1D4ED8"></path>
+        <path d="M685,350 L632,320 A60,60 0 0,1 685,290 z" id="Slice4" fill="#2563EB"></path>
+        
+        <!-- Legend -->
+        <rect id="Legend1" fill="#3B82F6" x="610" y="420" width="10" height="10" rx="2"></rect>
+        <text id="Legend1Text" font-family="Arial" font-size="12" font-weight="normal" fill="#64748B">
+            <tspan x="630" y="430">Paracetamol</tspan>
+        </text>
+        
+        <rect id="Legend2" fill="#1D4ED8" x="610" y="440" width="10" height="10" rx="2"></rect>
+        <text id="Legend2Text" font-family="Arial" font-size="12" font-weight="normal" fill="#64748B">
+            <tspan x="630" y="450">Antibiotics</tspan>
+        </text>
+        
+        <rect id="Legend3" fill="#2563EB" x="710" y="420" width="10" height="10" rx="2"></rect>
+        <text id="Legend3Text" font-family="Arial" font-size="12" font-weight="normal" fill="#64748B">
+            <tspan x="730" y="430">Antimalarials</tspan>
+        </text>
+        
+        <rect id="Legend4" fill="url(#linearGradient-4)" x="710" y="440" width="10" height="10" rx="2"></rect>
+        <text id="Legend4Text" font-family="Arial" font-size="12" font-weight="normal" fill="#64748B">
+            <tspan x="730" y="450">Others</tspan>
+        </text>
+    </g>
+</svg>

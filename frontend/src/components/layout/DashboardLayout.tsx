@@ -13,6 +13,7 @@ import {
 } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { NotificationsPanel } from '../common/NotificationsPanel';
+import { PageTransition } from '../animations/PageTransition';
 
 interface DashboardLayoutProps {
   sidebar: ReactNode;
@@ -102,7 +103,7 @@ export function DashboardLayout({
             boxShadow: '0 0 10px rgba(0, 0, 0, 0.05)',
           }}
         >
-          {children}
+          <PageTransition>{children}</PageTransition>
         </Box>
       </AppShell.Main>
     </AppShell>
