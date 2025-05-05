@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PHARMACY
+  EXECUTIVE
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  pharmacy  Pharmacy? @relation(fields: [pharmacyId], references: [id])
+  pharmacyId String?
+
+  @@map("users")
+}
+
+model Pharmacy {
+  id                 String   @id @default(uuid())
+  name               String
+  pharmacistInCharge String
+  pcnLicenseNumber   String   @unique
+  phoneNumber        String
+  email              String?
+  address            String
+  ward               String
+  lga                String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  users              User[]
+  reports            Report[]
+
+  @@map("pharmacies")
+}
+
+model Report {
+  id                      String   @id @default(uuid())
+  reportDate              DateTime
+  patientsServed          Int
+  maleCount               Int?
+  femaleCount             Int?
+  childrenCount           Int?
+  adultCount              Int?
+  elderlyCount            Int?
+  topMedications          String[]
+  commonAilments          String[]
+  adverseDrugReactions    Int
+  adverseReactionDetails  String?
+  referralsMade           Int
+  immunizationsGiven      Int?
+  healthEducationSessions Int?
+  bpChecks                Int?
+  expiredDrugs            Boolean?
+  stockouts               Boolean?
+  supplyDelays            Boolean?
+  notes                   String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  // Relations
+  pharmacy                Pharmacy @relation(fields: [pharmacyId], references: [id])
+  pharmacyId              String
+
+  @@map("reports")
+}
