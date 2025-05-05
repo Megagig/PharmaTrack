@@ -6,12 +6,28 @@ import { UserRole } from '../types';
 const router = Router();
 const pharmacyController = new PharmacyController();
 
+// Bind controller methods to ensure correct 'this' context
+const createPharmacy =
+  pharmacyController.createPharmacy.bind(pharmacyController);
+const getAllPharmacies =
+  pharmacyController.getAllPharmacies.bind(pharmacyController);
+const getPharmacyById =
+  pharmacyController.getPharmacyById.bind(pharmacyController);
+const updatePharmacy =
+  pharmacyController.updatePharmacy.bind(pharmacyController);
+const deletePharmacy =
+  pharmacyController.deletePharmacy.bind(pharmacyController);
+const getPharmaciesByLGA =
+  pharmacyController.getPharmaciesByLGA.bind(pharmacyController);
+const getPharmaciesByWard =
+  pharmacyController.getPharmaciesByWard.bind(pharmacyController);
+
 // Create a new pharmacy (only executives and admins)
 router.post(
   '/',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  pharmacyController.createPharmacy
+  createPharmacy
 );
 
 // Get all pharmacies (only executives and admins)
@@ -19,22 +35,18 @@ router.get(
   '/',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  pharmacyController.getAllPharmacies
+  getAllPharmacies
 );
 
 // Get pharmacy by ID (all authenticated users)
-router.get(
-  '/:id',
-  authenticate,
-  pharmacyController.getPharmacyById
-);
+router.get('/:id', authenticate, getPharmacyById);
 
 // Update pharmacy (only executives and admins)
 router.put(
   '/:id',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  pharmacyController.updatePharmacy
+  updatePharmacy
 );
 
 // Delete pharmacy (only admins)
@@ -42,7 +54,7 @@ router.delete(
   '/:id',
   authenticate,
   authorize([UserRole.ADMIN]),
-  pharmacyController.deletePharmacy
+  deletePharmacy
 );
 
 // Get pharmacies by LGA (only executives and admins)
@@ -50,7 +62,7 @@ router.get(
   '/lga/:lga',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  pharmacyController.getPharmaciesByLGA
+  getPharmaciesByLGA
 );
 
 // Get pharmacies by ward (only executives and admins)
@@ -58,7 +70,7 @@ router.get(
   '/ward/:ward',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  pharmacyController.getPharmaciesByWard
+  getPharmaciesByWard
 );
 
 export default router;

@@ -22,9 +22,40 @@ export const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json());
 
-// Basic route
-app.get('/', (req: Request, res: Response) => {
+// Basic routes
+app.get('/', (req: Request, res: Response): void => {
   res.send('PharmaTrack API is running');
+});
+
+app.get('/api/health', (req: Request, res: Response): void => {
+  res.status(200).json({ status: 'ok', message: 'API is healthy' });
+});
+
+// Test database connection
+app.get('/api/db-test', async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Try to count users as a simple database operation
+    const userCount = await prisma.user.count();
+
+    // Get database connection info (hiding sensitive parts)
+    const dbUrl = process.env.DATABASE_URL || '';
+    const dbConnectionInfo =
+      dbUrl.split('@')[1]?.split('/')[0] || 'Connection info hidden';
+
+    res.status(200).json({
+      status: 'connected',
+      message: 'Database connection successful',
+      connection: dbConnectionInfo,
+      userCount,
+    });
+  } catch (error: any) {
+    console.error('Database connection error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Database connection failed',
+      error: error.message,
+    });
+  }
 });
 
 // Register routes
@@ -33,7 +64,7 @@ app.use('/api/pharmacies', pharmacyRoutes);
 app.use('/api/reports', reportRoutes);
 
 // Error handling middleware
-app.use((err: any, req: Request, res: Response, next: any) => {
+app.use((err: any, req: Request, res: Response, next: any): void => {
   console.error(err.stack);
   res.status(500).json({
     message: 'Internal Server Error',

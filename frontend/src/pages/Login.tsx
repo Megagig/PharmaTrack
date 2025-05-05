@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   TextInput,
   PasswordInput,
@@ -14,9 +14,11 @@ import {
 } from '@mantine/core';
 import { useAuthStore } from '../store/authStore';
 import { UserRole } from '../store/authStore';
+import { authService } from '../services/authService';
 
 export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const login = useAuthStore((state) => state.login);
 
   const [email, setEmail] = useState('');
@@ -25,40 +27,35 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState<UserRole>('EXECUTIVE');
 
+  // Check for success message from registration
+  const message = location.state?.message;
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // In a real implementation, this would call the API
-      // For now, we'll simulate a successful login
+      // Call the authentication API
+      const response = await authService.login({
+        email,
+        password,
+      });
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Update auth store with user data and token
+      login(response.user, response.token);
 
-      // Mock user data (in real app, this would come from the API)
-      const userData = {
-        id: '1',
-        email: email,
-        role: userType,
-        // Add pharmacyId for pharmacy users
-        ...(userType === 'PHARMACY' ? { pharmacyId: '123' } : {}),
-      };
-
-      const token = 'mock-jwt-token';
-
-      // Update auth store
-      login(userData, token);
-
-      // Redirect based on role
-      if (userType === 'EXECUTIVE' || userType === 'ADMIN') {
+      // Redirect based on user role
+      if (
+        response.user.role === 'EXECUTIVE' ||
+        response.user.role === 'ADMIN'
+      ) {
         navigate('/executive/dashboard');
-      } else if (userType === 'PHARMACY') {
+      } else if (response.user.role === 'PHARMACY') {
         navigate('/pharmacy/dashboard');
       }
-    } catch (err) {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
@@ -72,6 +69,12 @@ export function Login() {
 
       <Paper withBorder shadow="md" p={30} mt={30} radius="md">
         <form onSubmit={handleLogin}>
+          {message && (
+            <Alert color="green" mb="md">
+              {message}
+            </Alert>
+          )}
+
           {error && (
             <Alert color="red" mb="md">
               {error}
@@ -117,8 +120,10 @@ export function Login() {
         </form>
 
         <Text c="dimmed" size="sm" ta="center" mt="md">
-          For demo purposes, any email/password combination will work. Select
-          your role to access the appropriate dashboard.
+          Don't have an account?{' '}
+          <Text component="a" href="/register" c="blue">
+            Register here
+          </Text>
         </Text>
       </Paper>
     </Container>

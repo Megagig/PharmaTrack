@@ -6,48 +6,48 @@ import { UserRole } from '../types';
 const router = Router();
 const reportController = new ReportController();
 
+// Bind controller methods to ensure correct 'this' context
+const createReport = reportController.createReport.bind(reportController);
+const getAllReports = reportController.getAllReports.bind(reportController);
+const getReportById = reportController.getReportById.bind(reportController);
+const getReportsByPharmacy =
+  reportController.getReportsByPharmacy.bind(reportController);
+const updateReport = reportController.updateReport.bind(reportController);
+const deleteReport = reportController.deleteReport.bind(reportController);
+const getReportsByDateRange =
+  reportController.getReportsByDateRange.bind(reportController);
+const getReportsByLGA = reportController.getReportsByLGA.bind(reportController);
+const getReportsByWard =
+  reportController.getReportsByWard.bind(reportController);
+const getReportsSummary =
+  reportController.getReportsSummary.bind(reportController);
+
 // Create a new report (all authenticated users)
-router.post(
-  '/',
-  authenticate,
-  reportController.createReport
-);
+router.post('/', authenticate, createReport);
 
 // Get all reports (only executives and admins)
 router.get(
   '/',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  reportController.getAllReports
+  getAllReports
 );
 
 // Get report by ID (all authenticated users)
-router.get(
-  '/:id',
-  authenticate,
-  reportController.getReportById
-);
+router.get('/:id', authenticate, getReportById);
 
 // Get reports by pharmacy (all authenticated users)
-router.get(
-  '/pharmacy/:pharmacyId',
-  authenticate,
-  reportController.getReportsByPharmacy
-);
+router.get('/pharmacy/:pharmacyId', authenticate, getReportsByPharmacy);
 
 // Update report (all authenticated users)
-router.put(
-  '/:id',
-  authenticate,
-  reportController.updateReport
-);
+router.put('/:id', authenticate, updateReport);
 
 // Delete report (only executives and admins)
 router.delete(
   '/:id',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  reportController.deleteReport
+  deleteReport
 );
 
 // Get reports by date range (only executives and admins)
@@ -55,7 +55,7 @@ router.get(
   '/date-range',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  reportController.getReportsByDateRange
+  getReportsByDateRange
 );
 
 // Get reports by LGA (only executives and admins)
@@ -63,7 +63,7 @@ router.get(
   '/lga/:lga',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  reportController.getReportsByLGA
+  getReportsByLGA
 );
 
 // Get reports by ward (only executives and admins)
@@ -71,7 +71,7 @@ router.get(
   '/ward/:ward',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  reportController.getReportsByWard
+  getReportsByWard
 );
 
 // Get reports summary (only executives and admins)
@@ -79,7 +79,7 @@ router.get(
   '/summary',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  reportController.getReportsSummary
+  getReportsSummary
 );
 
 export default router;

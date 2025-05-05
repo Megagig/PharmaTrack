@@ -17,11 +17,13 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.7.0",
+    "@types/pg": "^8.11.14",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "pg": "^8.15.6",
     "prisma": "^6.7.0"
   },
   "devDependencies": {

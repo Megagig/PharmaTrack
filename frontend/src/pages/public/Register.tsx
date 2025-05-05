@@ -33,6 +33,7 @@ import {
   ValidationResult,
 } from '../../utils/formValidation';
 import { AnimatedElement } from '../../components/animations/AnimatedElement';
+import { authService } from '../../services/authService';
 
 export function Register() {
   const navigate = useNavigate();
@@ -52,6 +53,8 @@ export function Register() {
   const [pharmacyAddress, setPharmacyAddress] = useState('');
   const [pharmacyPhone, setPharmacyPhone] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
+  const [ward, setWard] = useState('');
+  const [lga, setLga] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   // Form validation
@@ -64,6 +67,8 @@ export function Register() {
   const [pharmacyAddressError, setPharmacyAddressError] = useState('');
   const [pharmacyPhoneError, setPharmacyPhoneError] = useState('');
   const [licenseNumberError, setLicenseNumberError] = useState('');
+  const [wardError, setWardError] = useState('');
+  const [lgaError, setLgaError] = useState('');
 
   // Validate email on change
   useEffect(() => {
@@ -198,6 +203,17 @@ export function Register() {
         hasErrors = true;
       }
 
+      // Validate ward and LGA
+      if (!ward) {
+        setWardError('Ward is required');
+        hasErrors = true;
+      }
+
+      if (!lga) {
+        setLgaError('LGA is required');
+        hasErrors = true;
+      }
+
       if (hasErrors) {
         setError('Please correct the errors before proceeding');
         return;
@@ -223,18 +239,49 @@ export function Register() {
     setLoading(true);
 
     try {
-      // In a real implementation, this would call the API
-      // For now, we'll simulate a successful registration
+      if (userType === 'PHARMACY') {
+        // Register as pharmacy
+        const response = await authService.registerPharmacy({
+          email,
+          password,
+          role: userType,
+          pharmacy: {
+            name: pharmacyName,
+            pharmacistInCharge: `${firstName} ${lastName}`,
+            pcnLicenseNumber: licenseNumber,
+            phoneNumber: pharmacyPhone,
+            email: email, // Using the same email for pharmacy and user
+            address: pharmacyAddress,
+            ward: ward,
+            lga: lga,
+          },
+        });
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Navigate to login page after successful registration
+        navigate('/login', {
+          state: {
+            message: 'Pharmacy registration successful! Please log in.',
+          },
+        });
+      } else {
+        // Register as executive
+        const response = await authService.register({
+          email,
+          password,
+          role: userType,
+        });
 
-      // Navigate to login page after successful registration
-      navigate('/login', {
-        state: { message: 'Registration successful! Please log in.' },
-      });
+        // Navigate to login page after successful registration
+        navigate('/login', {
+          state: {
+            message: 'Executive registration successful! Please log in.',
+          },
+        });
+      }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during registration');
+      setError(
+        err.response?.data?.message || 'An error occurred during registration'
+      );
     } finally {
       setLoading(false);
     }
@@ -395,6 +442,28 @@ export function Register() {
                       ]}
                     />
                   </AnimatedElement>
+
+                  <AnimatedElement type="fadeInUp" delay={0.6}>
+                    <TextInput
+                      label="Ward"
+                      placeholder="Enter ward"
+                      required
+                      value={ward}
+                      onChange={(e) => setWard(e.target.value)}
+                      error={wardError}
+                    />
+                  </AnimatedElement>
+
+                  <AnimatedElement type="fadeInUp" delay={0.7}>
+                    <TextInput
+                      label="Local Government Area (LGA)"
+                      placeholder="Enter LGA"
+                      required
+                      value={lga}
+                      onChange={(e) => setLga(e.target.value)}
+                      error={lgaError}
+                    />
+                  </AnimatedElement>
                 </Stack>
               ) : (
                 <Stack>
@@ -470,6 +539,8 @@ export function Register() {
                       <Text>{pharmacyAddress}</Text>
                       <Text>{pharmacyPhone}</Text>
                       <Text>License: {licenseNumber}</Text>
+                      <Text>Ward: {ward}</Text>
+                      <Text>LGA: {lga}</Text>
                     </Paper>
                   </AnimatedElement>
                 )}

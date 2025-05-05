@@ -1,7 +1,9 @@
+import { Request } from 'express';
+
 export enum UserRole {
   PHARMACY = 'PHARMACY',
   EXECUTIVE = 'EXECUTIVE',
-  ADMIN = 'ADMIN'
+  ADMIN = 'ADMIN',
 }
 
 export interface User {
@@ -99,8 +101,32 @@ export interface ReportCreateRequest {
   notes?: string;
 }
 
+export interface PharmacyRegisterRequest {
+  email: string;
+  password: string;
+  role: UserRole;
+  pharmacy: PharmacyCreateRequest;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: JwtPayload;
+}
+
+export interface ReportSummary {
+  totalReports: number;
+  totalPharmacies: number;
+  totalPatientsServed: number;
+  totalReferrals: number;
+  totalAdverseReactions: number;
+}
+
 export interface JwtPayload {
-  userId: string;
+  id: string;
   email: string;
   role: UserRole;
   pharmacyId?: string;
