@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import morgan from 'morgan';
 import { PrismaClient } from '@prisma/client';
 
 // Import routes
@@ -19,8 +20,15 @@ const port = process.env.PORT || 5000;
 export const prisma = new PrismaClient();
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite default port
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
 // Basic routes
 app.get('/', (req: Request, res: Response): void => {
@@ -34,10 +42,7 @@ app.get('/api/health', (req: Request, res: Response): void => {
 // Test database connection
 app.get('/api/db-test', async (req: Request, res: Response): Promise<void> => {
   try {
-    // Try to count users as a simple database operation
     const userCount = await prisma.user.count();
-
-    // Get database connection info (hiding sensitive parts)
     const dbUrl = process.env.DATABASE_URL || '';
     const dbConnectionInfo =
       dbUrl.split('@')[1]?.split('/')[0] || 'Connection info hidden';

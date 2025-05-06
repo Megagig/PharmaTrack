@@ -290,9 +290,11 @@ export function Register() {
   return (
     <PublicLayout>
       <Container size="sm" py={50}>
-        <Title order={2} ta="center" mb="xl">
-          Create Your PharmaTrack Account
-        </Title>
+        <AnimatedElement type="fadeInDown">
+          <Title order={1} ta="center" mb="xl">
+            Create Your PharmaTrack Account
+          </Title>
+        </AnimatedElement>
 
         <Paper withBorder shadow="md" p={{ base: 'md', sm: 30 }} radius="md">
           <Stepper
@@ -302,86 +304,101 @@ export function Register() {
             mb="xl"
           >
             <Stepper.Step
-              label="Account Details"
-              description="Basic information"
-            >
-              <Stack>
-                <AnimatedElement type="fadeInUp" delay={0.1}>
-                  <Group grow>
-                    <TextInput
-                      label="First Name"
-                      placeholder="John"
-                      required
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      error={firstNameError}
-                    />
-                    <TextInput
-                      label="Last Name"
-                      placeholder="Doe"
-                      required
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      error={lastNameError}
-                    />
-                  </Group>
-                </AnimatedElement>
-
-                <AnimatedElement type="fadeInUp" delay={0.2}>
-                  <TextInput
-                    label="Email"
-                    placeholder="you@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    error={emailError}
-                  />
-                </AnimatedElement>
-
-                <AnimatedElement type="fadeInUp" delay={0.3}>
-                  <PasswordInput
-                    label="Password"
-                    placeholder="Create a strong password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    error={passwordError}
-                  />
-                  <PasswordStrengthIndicator password={password} />
-                </AnimatedElement>
-
-                <AnimatedElement type="fadeInUp" delay={0.4}>
-                  <PasswordInput
-                    label="Confirm Password"
-                    placeholder="Confirm your password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    error={confirmPasswordError}
-                  />
-                </AnimatedElement>
-
-                <Stack mb="md">
-                  <Text fw={500} size="sm">
-                    Register As
-                  </Text>
-                  <SegmentedControl
-                    value={userType}
-                    onChange={(value) => setUserType(value as UserRole)}
-                    data={[
-                      { label: 'Pharmacy', value: 'PHARMACY' },
-                      { label: 'Executive', value: 'EXECUTIVE' },
-                    ]}
-                    fullWidth
-                  />
-                </Stack>
-              </Stack>
-            </Stepper.Step>
-
+              label="Account Setup"
+              description="Your credentials"
+            />
             <Stepper.Step
               label="Organization Details"
               description="Your organization"
-            >
+            />
+            <Stepper.Step
+              label="Review & Submit"
+              description="Verify information"
+            />
+          </Stepper>
+
+          {active === 0 && (
+            <Stack>
+              <Text fw={700} size="lg" mb="md">
+                Account Credentials
+              </Text>
+              <AnimatedElement type="fadeInUp" delay={0.1}>
+                <Group grow>
+                  <TextInput
+                    label="First Name"
+                    placeholder="John"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    error={firstNameError}
+                  />
+                  <TextInput
+                    label="Last Name"
+                    placeholder="Doe"
+                    required
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    error={lastNameError}
+                  />
+                </Group>
+              </AnimatedElement>
+
+              <AnimatedElement type="fadeInUp" delay={0.2}>
+                <TextInput
+                  label="Email"
+                  placeholder="you@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  error={emailError}
+                />
+              </AnimatedElement>
+
+              <AnimatedElement type="fadeInUp" delay={0.3}>
+                <PasswordInput
+                  label="Password"
+                  placeholder="Create a strong password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  error={passwordError}
+                />
+                <PasswordStrengthIndicator password={password} />
+              </AnimatedElement>
+
+              <AnimatedElement type="fadeInUp" delay={0.4}>
+                <PasswordInput
+                  label="Confirm Password"
+                  placeholder="Confirm your password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  error={confirmPasswordError}
+                />
+              </AnimatedElement>
+
+              <Stack mb="md">
+                <Text fw={500} size="sm">
+                  Register As
+                </Text>
+                <SegmentedControl
+                  value={userType}
+                  onChange={(value) => setUserType(value as UserRole)}
+                  data={[
+                    { label: 'Pharmacy', value: 'PHARMACY' },
+                    { label: 'Executive', value: 'EXECUTIVE' },
+                  ]}
+                  fullWidth
+                />
+              </Stack>
+            </Stack>
+          )}
+
+          {active === 1 && (
+            <Stack>
+              <Text fw={700} size="lg" mb="md">
+                Organization Information
+              </Text>
               {userType === 'PHARMACY' ? (
                 <Stack>
                   <AnimatedElement type="fadeInUp" delay={0.1}>
@@ -506,88 +523,81 @@ export function Register() {
                   </AnimatedElement>
                 </Stack>
               )}
-            </Stepper.Step>
+            </Stack>
+          )}
 
-            <Stepper.Step label="Confirmation" description="Review and submit">
-              <Stack>
-                <AnimatedElement type="fadeInUp" delay={0.1}>
-                  <Title order={4} mb="md">
-                    Review Your Information
-                  </Title>
-                </AnimatedElement>
+          {active === 2 && (
+            <Stack>
+              <Text fw={700} size="lg" mb="md">
+                Review Your Information
+              </Text>
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="md" mb="sm">
+                  Account Details
+                </Text>
+                <Text>
+                  {firstName} {lastName}
+                </Text>
+                <Text>{email}</Text>
+                <Text>Account Type: {userType}</Text>
+              </Paper>
 
-                <AnimatedElement type="fadeInUp" delay={0.2}>
-                  <Paper withBorder p="md" radius="md" mb="md">
-                    <Text fw={700} mb="xs">
-                      Account Details
-                    </Text>
-                    <Text>
-                      {firstName} {lastName}
-                    </Text>
-                    <Text>{email}</Text>
-                    <Text>Account Type: {userType}</Text>
-                  </Paper>
-                </AnimatedElement>
+              {userType === 'PHARMACY' && (
+                <Paper withBorder p="md">
+                  <Text fw={700} size="md" mb="sm">
+                    Pharmacy Details
+                  </Text>
+                  <Text>{pharmacyName}</Text>
+                  <Text>{pharmacyAddress}</Text>
+                  <Text>{pharmacyPhone}</Text>
+                  <Text>License: {licenseNumber}</Text>
+                  <Text>Ward: {ward}</Text>
+                  <Text>LGA: {lga}</Text>
+                </Paper>
+              )}
 
-                {userType === 'PHARMACY' && (
-                  <AnimatedElement type="fadeInUp" delay={0.3}>
-                    <Paper withBorder p="md" radius="md" mb="md">
-                      <Text fw={700} mb="xs">
-                        Pharmacy Details
+              <AnimatedElement type="fadeInUp" delay={0.4}>
+                <Checkbox
+                  label={
+                    <Text size="sm">
+                      I agree to the{' '}
+                      <Text
+                        component={Link}
+                        to="/terms"
+                        c={theme.colors.blue[6]}
+                        inherit
+                      >
+                        Terms of Service
+                      </Text>{' '}
+                      and{' '}
+                      <Text
+                        component={Link}
+                        to="/privacy"
+                        c={theme.colors.blue[6]}
+                        inherit
+                      >
+                        Privacy Policy
                       </Text>
-                      <Text>{pharmacyName}</Text>
-                      <Text>{pharmacyAddress}</Text>
-                      <Text>{pharmacyPhone}</Text>
-                      <Text>License: {licenseNumber}</Text>
-                      <Text>Ward: {ward}</Text>
-                      <Text>LGA: {lga}</Text>
-                    </Paper>
-                  </AnimatedElement>
-                )}
+                    </Text>
+                  }
+                  checked={agreeToTerms}
+                  onChange={(e) => setAgreeToTerms(e.target.checked)}
+                />
+              </AnimatedElement>
 
-                <AnimatedElement type="fadeInUp" delay={0.4}>
-                  <Checkbox
-                    label={
-                      <Text size="sm">
-                        I agree to the{' '}
-                        <Text
-                          component={Link}
-                          to="/terms"
-                          c={theme.colors.blue[6]}
-                          inherit
-                        >
-                          Terms of Service
-                        </Text>{' '}
-                        and{' '}
-                        <Text
-                          component={Link}
-                          to="/privacy"
-                          c={theme.colors.blue[6]}
-                          inherit
-                        >
-                          Privacy Policy
-                        </Text>
-                      </Text>
-                    }
-                    checked={agreeToTerms}
-                    onChange={(e) => setAgreeToTerms(e.target.checked)}
-                  />
-                </AnimatedElement>
-
-                <AnimatedElement type="bounce" delay={0.5}>
-                  <Button
-                    fullWidth
-                    onClick={handleSubmit}
-                    loading={loading}
-                    mt="md"
-                    size="lg"
-                  >
-                    Complete Registration
-                  </Button>
-                </AnimatedElement>
-              </Stack>
-            </Stepper.Step>
-          </Stepper>
+              <AnimatedElement type="bounce" delay={0.5}>
+                <Button
+                  fullWidth
+                  onClick={handleSubmit}
+                  loading={loading}
+                  mt="md"
+                  size="lg"
+                >
+                  Complete Registration
+                </Button>
+              </AnimatedElement>
+            </Stack>
+          )}
 
           {error && (
             <Alert color="red" mb="md">

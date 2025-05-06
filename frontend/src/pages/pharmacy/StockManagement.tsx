@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { 
-  Title, 
-  Paper, 
-  Table, 
-  Button, 
-  Group, 
-  TextInput, 
-  Modal, 
+import {
+  Title,
+  Paper,
+  Table,
+  Button,
+  Group,
+  TextInput,
+  Modal,
   NumberInput,
   Select,
   Stack,
   Text,
-  Badge
+  Badge,
+  Box,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 
@@ -19,85 +20,90 @@ export function StockManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [selectedMedicationId, setSelectedMedicationId] = useState<string | null>(null);
-  
+  const [selectedMedicationId, setSelectedMedicationId] = useState<
+    string | null
+  >(null);
+
   // This would be fetched from the API in a real implementation
   const mockMedications = [
-    { 
-      id: '1', 
-      name: 'Paracetamol 500mg', 
-      category: 'Analgesic', 
-      quantity: 250, 
+    {
+      id: '1',
+      name: 'Paracetamol 500mg',
+      category: 'Analgesic',
+      quantity: 250,
       expiryDate: '2024-06-15',
-      status: 'In Stock'
+      status: 'In Stock',
     },
-    { 
-      id: '2', 
-      name: 'Amoxicillin 250mg', 
-      category: 'Antibiotic', 
-      quantity: 120, 
+    {
+      id: '2',
+      name: 'Amoxicillin 250mg',
+      category: 'Antibiotic',
+      quantity: 120,
       expiryDate: '2024-03-20',
-      status: 'In Stock'
+      status: 'In Stock',
     },
-    { 
-      id: '3', 
-      name: 'Metformin 500mg', 
-      category: 'Antidiabetic', 
-      quantity: 180, 
+    {
+      id: '3',
+      name: 'Metformin 500mg',
+      category: 'Antidiabetic',
+      quantity: 180,
       expiryDate: '2024-08-10',
-      status: 'In Stock'
+      status: 'In Stock',
     },
-    { 
-      id: '4', 
-      name: 'Lisinopril 10mg', 
-      category: 'Antihypertensive', 
-      quantity: 90, 
+    {
+      id: '4',
+      name: 'Lisinopril 10mg',
+      category: 'Antihypertensive',
+      quantity: 90,
       expiryDate: '2024-05-05',
-      status: 'Low Stock'
+      status: 'Low Stock',
     },
-    { 
-      id: '5', 
-      name: 'Salbutamol Inhaler', 
-      category: 'Bronchodilator', 
-      quantity: 15, 
+    {
+      id: '5',
+      name: 'Salbutamol Inhaler',
+      category: 'Bronchodilator',
+      quantity: 15,
       expiryDate: '2024-07-22',
-      status: 'Low Stock'
+      status: 'Low Stock',
     },
-    { 
-      id: '6', 
-      name: 'Ciprofloxacin 500mg', 
-      category: 'Antibiotic', 
-      quantity: 0, 
+    {
+      id: '6',
+      name: 'Ciprofloxacin 500mg',
+      category: 'Antibiotic',
+      quantity: 0,
       expiryDate: '2024-04-18',
-      status: 'Out of Stock'
+      status: 'Out of Stock',
     },
   ];
-  
+
   // Filter medications based on search query
-  const filteredMedications = mockMedications.filter(med => 
-    med.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    med.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredMedications = mockMedications.filter(
+    (med) =>
+      med.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      med.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   // Find the selected medication for the update modal
-  const selectedMedication = mockMedications.find(med => med.id === selectedMedicationId);
-  
+  const selectedMedication = mockMedications.find(
+    (med) => med.id === selectedMedicationId
+  );
+
   const handleAddMedication = () => {
     // In a real implementation, this would call the API
     setAddModalOpen(false);
   };
-  
+
   const handleUpdateMedication = () => {
     // In a real implementation, this would call the API
     setUpdateModalOpen(false);
     setSelectedMedicationId(null);
   };
-  
+
   const openUpdateModal = (id: string) => {
     setSelectedMedicationId(id);
     setUpdateModalOpen(true);
   };
-  
+
   // Function to determine badge color based on status
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -114,8 +120,10 @@ export function StockManagement() {
 
   return (
     <div>
-      <Title order={2} mb="lg">Stock Management</Title>
-      
+      <Title order={2} mb="lg">
+        Stock Management
+      </Title>
+
       <Group mb="md">
         <TextInput
           placeholder="Search medications..."
@@ -125,7 +133,7 @@ export function StockManagement() {
         />
         <Button onClick={() => setAddModalOpen(true)}>Add Medication</Button>
       </Group>
-      
+
       <Paper withBorder>
         <Table>
           <Table.Thead>
@@ -152,7 +160,11 @@ export function StockManagement() {
                 </Table.Td>
                 <Table.Td>
                   <Group gap="xs">
-                    <Button size="xs" variant="outline" onClick={() => openUpdateModal(medication.id)}>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      onClick={() => openUpdateModal(medication.id)}
+                    >
                       Update
                     </Button>
                   </Group>
@@ -162,51 +174,56 @@ export function StockManagement() {
           </Table.Tbody>
         </Table>
       </Paper>
-      
+
       {/* Add Medication Modal */}
-      <Modal
-        opened={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        title={<Title order={3}>Add New Medication</Title>}
-      >
-        <Stack>
-          <TextInput
-            label="Medication Name"
-            placeholder="Enter medication name"
-            required
-          />
-          
-          <Select
-            label="Category"
-            placeholder="Select category"
-            data={[
-              'Analgesic', 'Antibiotic', 'Antidiabetic', 
-              'Antihypertensive', 'Bronchodilator', 'Antihistamine',
-              'Anti-inflammatory', 'Antiviral', 'Other'
-            ]}
-            required
-          />
-          
-          <NumberInput
-            label="Quantity"
-            placeholder="Enter quantity"
-            min={0}
-            required
-          />
-          
-          <DateInput
-            label="Expiry Date"
-            placeholder="Select date"
-            required
-          />
-          
-          <Group justify="flex-end" mt="md">
-            <Button variant="outline" onClick={() => setAddModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddMedication}>Add Medication</Button>
-          </Group>
-        </Stack>
+      <Modal opened={addModalOpen} onClose={() => setAddModalOpen(false)}>
+        <Box>
+          <Title order={2} mb="md">
+            Add New Medication
+          </Title>
+          <Stack>
+            <TextInput
+              label="Medication Name"
+              placeholder="Enter medication name"
+              required
+            />
+
+            <Select
+              label="Category"
+              placeholder="Select category"
+              data={[
+                'Analgesic',
+                'Antibiotic',
+                'Antidiabetic',
+                'Antihypertensive',
+                'Bronchodilator',
+                'Antihistamine',
+                'Anti-inflammatory',
+                'Antiviral',
+                'Other',
+              ]}
+              required
+            />
+
+            <NumberInput
+              label="Quantity"
+              placeholder="Enter quantity"
+              min={0}
+              required
+            />
+
+            <DateInput label="Expiry Date" placeholder="Select date" required />
+
+            <Group justify="flex-end" mt="md">
+              <Button variant="outline" onClick={() => setAddModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddMedication}>Add Medication</Button>
+            </Group>
+          </Stack>
+        </Box>
       </Modal>
-      
+
       {/* Update Medication Modal */}
       <Modal
         opened={updateModalOpen}
@@ -214,41 +231,45 @@ export function StockManagement() {
           setUpdateModalOpen(false);
           setSelectedMedicationId(null);
         }}
-        title={<Title order={3}>Update Medication</Title>}
       >
-        {selectedMedication && (
-          <Stack>
-            <Text>Medication: {selectedMedication.name}</Text>
-            <Text>Current Quantity: {selectedMedication.quantity}</Text>
-            
-            <NumberInput
-              label="New Quantity"
-              placeholder="Enter new quantity"
-              min={0}
-              defaultValue={selectedMedication.quantity}
-              required
-            />
-            
-            <DateInput
-              label="New Expiry Date"
-              placeholder="Select date"
-              defaultValue={new Date(selectedMedication.expiryDate)}
-            />
-            
-            <Group justify="flex-end" mt="md">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setUpdateModalOpen(false);
-                  setSelectedMedicationId(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleUpdateMedication}>Update</Button>
-            </Group>
-          </Stack>
-        )}
+        <Box>
+          <Title order={2} mb="md">
+            Update Medication
+          </Title>
+          {selectedMedication && (
+            <Stack>
+              <Text>Medication: {selectedMedication.name}</Text>
+              <Text>Current Quantity: {selectedMedication.quantity}</Text>
+
+              <NumberInput
+                label="New Quantity"
+                placeholder="Enter new quantity"
+                min={0}
+                defaultValue={selectedMedication.quantity}
+                required
+              />
+
+              <DateInput
+                label="New Expiry Date"
+                placeholder="Select date"
+                defaultValue={new Date(selectedMedication.expiryDate)}
+              />
+
+              <Group justify="flex-end" mt="md">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setUpdateModalOpen(false);
+                    setSelectedMedicationId(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdateMedication}>Update</Button>
+              </Group>
+            </Stack>
+          )}
+        </Box>
       </Modal>
     </div>
   );

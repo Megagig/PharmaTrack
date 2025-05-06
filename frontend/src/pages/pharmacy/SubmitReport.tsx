@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import {
   Title,
   Paper,
-  TextInput,
   NumberInput,
   Button,
   Group,
@@ -10,7 +9,6 @@ import {
   Textarea,
   Switch,
   MultiSelect,
-  Select,
   Grid,
   Alert,
   LoadingOverlay,
@@ -22,6 +20,7 @@ import {
   ReportCreateRequest,
 } from '../../services/reportService';
 import { useNavigate } from 'react-router-dom';
+import { AxiosError } from 'axios';
 
 export function SubmitReport() {
   const { user } = useAuthStore();
@@ -29,6 +28,8 @@ export function SubmitReport() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [medications, setMedications] = useState<string[]>([]);
+  const [ailments, setAilments] = useState<string[]>([]);
 
   // Form state
   const [formData, setFormData] = useState<ReportCreateRequest>({
@@ -53,33 +54,31 @@ export function SubmitReport() {
     notes: '',
   });
 
-  // Dropdown data
-  const commonMedications = [
-    'Paracetamol',
-    'Amoxicillin',
-    'Ibuprofen',
-    'Metformin',
-    'Lisinopril',
-    'Omeprazole',
-    'Atorvastatin',
-    'Salbutamol',
-    'Hydrochlorothiazide',
-    'Metronidazole',
-    'Ciprofloxacin',
-  ];
+  // Fetch medications and ailments data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const reportsData = await reportService.getAllReports();
 
-  const commonAilments = [
-    'Malaria',
-    'Upper Respiratory Infection',
-    'Hypertension',
-    'Diabetes',
-    'Gastritis',
-    'Urinary Tract Infection',
-    'Pneumonia',
-    'Arthritis',
-    'Asthma',
-    'Skin Infection',
-  ];
+        // Extract unique medications and ailments from historical reports
+        const medicationSet = new Set<string>();
+        const ailmentsSet = new Set<string>();
+
+        reportsData.forEach((report) => {
+          report.topMedications.forEach((med) => medicationSet.add(med));
+          report.commonAilments.forEach((ailment) => ailmentsSet.add(ailment));
+        });
+
+        setMedications(Array.from(medicationSet).sort());
+        setAilments(Array.from(ailmentsSet).sort());
+      } catch (error) {
+        const axiosError = error as AxiosError;
+        console.error('Error fetching historical data:', axiosError);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Check if user is authenticated and has a pharmacy ID
   useEffect(() => {
@@ -89,7 +88,10 @@ export function SubmitReport() {
   }, [user]);
 
   // Handle form input changes
-  const handleInputChange = (field: keyof ReportCreateRequest, value: any) => {
+  const handleInputChange = (
+    field: keyof ReportCreateRequest,
+    value: string | number | boolean | Date | string[] | null
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -111,8 +113,9 @@ export function SubmitReport() {
     try {
       await reportService.createReport(formData);
       setSubmitted(true);
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Failed to submit report');
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      setError(axiosError.response?.data?.message || 'Failed to submit report');
     } finally {
       setLoading(false);
     }
@@ -282,13 +285,21 @@ export function SubmitReport() {
               <MultiSelect
                 label="Top Medications Dispensed"
                 placeholder="Select medications"
-                data={commonMedications}
+                data={medications.map((med) => ({ value: med, label: med }))}
                 searchable
-                creatable
-                getCreateLabel={(query) => `+ Add ${query}`}
+                withAsterisk
                 mb="md"
                 value={formData.topMedications}
-                onChange={(value) => handleInputChange('topMedications', value)}
+                onChange={(value) => {
+                  // Handle new items
+                  const newItems = value.filter(
+                    (item) => !medications.includes(item)
+                  );
+                  if (newItems.length > 0) {
+                    setMedications((prev) => [...prev, ...newItems].sort());
+                  }
+                  handleInputChange('topMedications', value);
+                }}
               />
             </Grid.Col>
 
@@ -296,13 +307,24 @@ export function SubmitReport() {
               <MultiSelect
                 label="Common Ailments Treated"
                 placeholder="Select ailments"
-                data={commonAilments}
+                data={ailments.map((ailment) => ({
+                  value: ailment,
+                  label: ailment,
+                }))}
                 searchable
-                creatable
-                getCreateLabel={(query) => `+ Add ${query}`}
+                withAsterisk
                 mb="md"
                 value={formData.commonAilments}
-                onChange={(value) => handleInputChange('commonAilments', value)}
+                onChange={(value) => {
+                  // Handle new items
+                  const newItems = value.filter(
+                    (item) => !ailments.includes(item)
+                  );
+                  if (newItems.length > 0) {
+                    setAilments((prev) => [...prev, ...newItems].sort());
+                  }
+                  handleInputChange('commonAilments', value);
+                }}
               />
             </Grid.Col>
           </Grid>

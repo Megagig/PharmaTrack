@@ -13,6 +13,8 @@ import {
   Button,
   Menu,
   rem,
+  Modal,
+  Box,
 } from '@mantine/core';
 import { pharmacyService } from '../../services/pharmacyService';
 import { reportService, Report } from '../../services/reportService';
@@ -27,6 +29,8 @@ export function ReportsOverview() {
   const [monthFilter, setMonthFilter] = useState<string | null>('All Months');
   const [lgas, setLgas] = useState<string[]>(['All LGAs']);
   const [timeRange, setTimeRange] = useState('6months');
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
   // Fetch reports and LGAs
   useEffect(() => {
@@ -312,7 +316,14 @@ export function ReportsOverview() {
                     <Table.Td>{report.pharmacy?.lga || 'Unknown'}</Table.Td>
                     <Table.Td>{report.patientsServed}</Table.Td>
                     <Table.Td>
-                      <Button size="xs" variant="outline">
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        onClick={() => {
+                          setViewModalOpen(true);
+                          setSelectedReport(report);
+                        }}
+                      >
                         View Details
                       </Button>
                     </Table.Td>
@@ -329,6 +340,33 @@ export function ReportsOverview() {
           </Table>
         </Paper>
       </div>
+
+      <Modal
+        opened={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedReport(null);
+        }}
+        size="lg"
+      >
+        <Box>
+          <Title order={2} mb="md">
+            Report Details
+          </Title>
+          {selectedReport && (
+            <div>
+              <Text>
+                Date: {new Date(selectedReport.reportDate).toLocaleDateString()}
+              </Text>
+              <Text>
+                Pharmacy: {selectedReport.pharmacy?.name || 'Unknown'}
+              </Text>
+              <Text>LGA: {selectedReport.pharmacy?.lga || 'Unknown'}</Text>
+              <Text>Patients Served: {selectedReport.patientsServed}</Text>
+            </div>
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 }

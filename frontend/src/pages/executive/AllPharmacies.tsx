@@ -11,6 +11,7 @@ import {
   Alert,
   Select,
   Text,
+  Box,
 } from '@mantine/core';
 import { pharmacyService, Pharmacy } from '../../services/pharmacyService';
 import { reportService } from '../../services/reportService';
@@ -195,73 +196,78 @@ export function AllPharmacies() {
         onClose={() => {
           setViewModalOpen(false);
           setSelectedPharmacy(null);
+          setPharmacyReports(null);
         }}
-        title={<Title order={3}>{selectedPharmacy?.name}</Title>}
         size="lg"
       >
-        {selectedPharmacy && (
-          <div>
-            <Paper withBorder p="md" mb="md">
-              <Title order={4} mb="md">
-                Pharmacy Information
-              </Title>
-              <Text>
-                <strong>Name:</strong> {selectedPharmacy.name}
-              </Text>
-              <Text>
-                <strong>Pharmacist in Charge:</strong>{' '}
-                {selectedPharmacy.pharmacistInCharge}
-              </Text>
-              <Text>
-                <strong>PCN License Number:</strong>{' '}
-                {selectedPharmacy.pcnLicenseNumber}
-              </Text>
-              <Text>
-                <strong>Phone Number:</strong> {selectedPharmacy.phoneNumber}
-              </Text>
-              <Text>
-                <strong>Email:</strong> {selectedPharmacy.email || 'N/A'}
-              </Text>
-              <Text>
-                <strong>Address:</strong> {selectedPharmacy.address}
-              </Text>
-              <Text>
-                <strong>Ward:</strong> {selectedPharmacy.ward}
-              </Text>
-              <Text>
-                <strong>LGA:</strong> {selectedPharmacy.lga}
-              </Text>
-            </Paper>
+        <Box>
+          <Title order={2} mb="md">
+            Pharmacy Details
+          </Title>
+          {selectedPharmacy && (
+            <div>
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Pharmacy Information
+                </Text>
+                <Text>
+                  <strong>Name:</strong> {selectedPharmacy.name}
+                </Text>
+                <Text>
+                  <strong>Pharmacist in Charge:</strong>{' '}
+                  {selectedPharmacy.pharmacistInCharge}
+                </Text>
+                <Text>
+                  <strong>PCN License Number:</strong>{' '}
+                  {selectedPharmacy.pcnLicenseNumber}
+                </Text>
+                <Text>
+                  <strong>Phone Number:</strong> {selectedPharmacy.phoneNumber}
+                </Text>
+                <Text>
+                  <strong>Email:</strong> {selectedPharmacy.email || 'N/A'}
+                </Text>
+                <Text>
+                  <strong>Address:</strong> {selectedPharmacy.address}
+                </Text>
+                <Text>
+                  <strong>Ward:</strong> {selectedPharmacy.ward}
+                </Text>
+                <Text>
+                  <strong>LGA:</strong> {selectedPharmacy.lga}
+                </Text>
+              </Paper>
 
-            <Paper withBorder p="md">
-              <Title order={4} mb="md">
-                Report Summary
-              </Title>
-              {pharmacyReports.length > 0 ? (
-                <>
-                  <Text>
-                    <strong>Total Reports:</strong> {pharmacyReports.length}
-                  </Text>
-                  <Text>
-                    <strong>Last Report Date:</strong>{' '}
-                    {new Date(
-                      pharmacyReports[0].reportDate
-                    ).toLocaleDateString()}
-                  </Text>
-                  <Text>
-                    <strong>Total Patients Served:</strong>{' '}
-                    {pharmacyReports.reduce(
-                      (sum, report) => sum + report.patientsServed,
-                      0
-                    )}
-                  </Text>
-                </>
-              ) : (
-                <Text c="dimmed">No reports submitted yet</Text>
-              )}
-            </Paper>
-          </div>
-        )}
+              <Paper withBorder p="md">
+                <Text fw={700} size="lg" mb="md">
+                  Report Summary
+                </Text>
+                {pharmacyReports.length > 0 ? (
+                  <>
+                    <Text>
+                      <strong>Total Reports:</strong> {pharmacyReports.length}
+                    </Text>
+                    <Text>
+                      <strong>Last Report Date:</strong>{' '}
+                      {new Date(
+                        pharmacyReports[0].reportDate
+                      ).toLocaleDateString()}
+                    </Text>
+                    <Text>
+                      <strong>Total Patients Served:</strong>{' '}
+                      {pharmacyReports.reduce(
+                        (sum, report) => sum + report.patientsServed,
+                        0
+                      )}
+                    </Text>
+                  </>
+                ) : (
+                  <Text c="dimmed">No reports submitted yet</Text>
+                )}
+              </Paper>
+            </div>
+          )}
+        </Box>
       </Modal>
     </div>
   );

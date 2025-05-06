@@ -4,30 +4,24 @@ import * as XLSX from 'xlsx';
 
 export class ReportService {
   async createReport(pharmacyId: string, data: ReportCreateRequest) {
-    // Check if pharmacy exists
-    const pharmacy = await prisma.pharmacy.findUnique({
-      where: { id: pharmacyId },
-    });
-
-    if (!pharmacy) {
-      throw new Error('Pharmacy not found');
-    }
-
-    // Create new report
-    const report = await prisma.report.create({
+    return await prisma.report.create({
       data: {
         ...data,
         pharmacyId,
+        reportDate: new Date(data.reportDate),
+      },
+      include: {
+        pharmacy: true,
       },
     });
-
-    return report;
   }
 
   async getReportById(id: string) {
     const report = await prisma.report.findUnique({
       where: { id },
-      include: { pharmacy: true },
+      include: {
+        pharmacy: true,
+      },
     });
 
     if (!report) {
@@ -40,64 +34,78 @@ export class ReportService {
   async getReportsByPharmacy(pharmacyId: string) {
     return await prisma.report.findMany({
       where: { pharmacyId },
-      orderBy: { reportDate: 'desc' },
+      include: {
+        pharmacy: true,
+      },
+      orderBy: {
+        reportDate: 'desc',
+      },
     });
   }
 
   async getAllReports() {
     return await prisma.report.findMany({
-      include: { pharmacy: true },
-      orderBy: { reportDate: 'desc' },
+      include: {
+        pharmacy: true,
+      },
+      orderBy: {
+        reportDate: 'desc',
+      },
     });
   }
 
   async updateReport(id: string, data: Partial<ReportCreateRequest>) {
-    // Check if report exists
-    const existingReport = await prisma.report.findUnique({
+    return await prisma.report.update({
       where: { id },
+      data: {
+        ...data,
+        reportDate: data.reportDate ? new Date(data.reportDate) : undefined,
+      },
+      include: {
+        pharmacy: true,
+      },
     });
-
-    if (!existingReport) {
-      throw new Error('Report not found');
-    }
-
-    // Update report
-    const updatedReport = await prisma.report.update({
-      where: { id },
-      data,
-    });
-
-    return updatedReport;
   }
 
   async deleteReport(id: string) {
-    // Check if report exists
-    const existingReport = await prisma.report.findUnique({
+    return await prisma.report.delete({
       where: { id },
     });
-
-    if (!existingReport) {
-      throw new Error('Report not found');
-    }
-
-    // Delete report
-    await prisma.report.delete({
-      where: { id },
-    });
-
-    return { message: 'Report deleted successfully' };
   }
 
   async getReportsByDateRange(startDate: Date, endDate: Date) {
+    // Ensure dates are properly converted to Date objects
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Set the time to start and end of day to ensure we catch all reports
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCHours(23, 59, 59, 999);
+
     return await prisma.report.findMany({
       where: {
         reportDate: {
-          gte: startDate,
-          lte: endDate,
+          gte: start,
+          lte: end,
         },
       },
-      include: { pharmacy: true },
-      orderBy: { reportDate: 'desc' },
+      include: {
+        pharmacy: {
+          select: {
+            id: true,
+            name: true,
+            ward: true,
+            lga: true,
+            address: true,
+            phoneNumber: true,
+            email: true,
+            pharmacistInCharge: true,
+          },
+        },
+      },
+      orderBy: {
+        reportDate: 'desc',
+      },
     });
   }
 
@@ -108,8 +116,12 @@ export class ReportService {
           lga,
         },
       },
-      include: { pharmacy: true },
-      orderBy: { reportDate: 'desc' },
+      include: {
+        pharmacy: true,
+      },
+      orderBy: {
+        reportDate: 'desc',
+      },
     });
   }
 
@@ -120,8 +132,12 @@ export class ReportService {
           ward,
         },
       },
-      include: { pharmacy: true },
-      orderBy: { reportDate: 'desc' },
+      include: {
+        pharmacy: true,
+      },
+      orderBy: {
+        reportDate: 'desc',
+      },
     });
   }
 
@@ -194,10 +210,15 @@ export class ReportService {
           'Children (0-12)': report.childrenCount || 0,
           'Adults (13-59)': report.adultCount || 0,
           'Elderly (60+)': report.elderlyCount || 0,
-          'Top Medications': report.topMedications.join(', '),
-          'Common Ailments': report.commonAilments.join(', '),
-          'Adverse Reactions': report.adverseDrugReactions,
-          'Referrals Made': report.referralsMade,
+          'Top Medications': Array.isArray(report.topMedications)
+            ? report.topMedications.join(', ')
+            : '',
+          'Common Ailments': Array.isArray(report.commonAilments)
+            ? report.commonAilments.join(', ')
+            : '',
+          'Adverse Reactions': report.adverseDrugReactions || 0,
+          'Adverse Reaction Details': report.adverseReactionDetails || '',
+          'Referrals Made': report.referralsMade || 0,
           Immunizations: report.immunizationsGiven || 0,
           'Health Education Sessions': report.healthEducationSessions || 0,
           'BP Checks': report.bpChecks || 0,
@@ -249,7 +270,7 @@ export class ReportService {
         }));
       }
 
-      // Create workbook and worksheet
+      // Create worksheet
       const worksheet = XLSX.utils.json_to_sheet(worksheetData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Reports');
@@ -259,6 +280,7 @@ export class ReportService {
 
       return buffer;
     } catch (error) {
+      console.error('Error generating Excel export:', error);
       throw new Error('Failed to generate Excel export');
     }
   }

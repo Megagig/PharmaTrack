@@ -26,29 +26,20 @@ const exportReports = reportController.exportReports.bind(reportController);
 // Create a new report (all authenticated users)
 router.post('/', authenticate, createReport);
 
-// Get all reports (only executives and admins)
+// Get reports summary (only executives and admins)
 router.get(
-  '/',
+  '/summary',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  getAllReports
+  getReportsSummary
 );
 
-// Get report by ID (all authenticated users)
-router.get('/:id', authenticate, getReportById);
-
-// Get reports by pharmacy (all authenticated users)
-router.get('/pharmacy/:pharmacyId', authenticate, getReportsByPharmacy);
-
-// Update report (all authenticated users)
-router.put('/:id', authenticate, updateReport);
-
-// Delete report (only executives and admins)
-router.delete(
-  '/:id',
+// Export reports to Excel (only executives and admins)
+router.get(
+  '/export',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  deleteReport
+  exportReports
 );
 
 // Get reports by date range (only executives and admins)
@@ -58,6 +49,9 @@ router.get(
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
   getReportsByDateRange
 );
+
+// Get reports by pharmacy (all authenticated users)
+router.get('/pharmacy/:pharmacyId', authenticate, getReportsByPharmacy);
 
 // Get reports by LGA (only executives and admins)
 router.get(
@@ -75,20 +69,26 @@ router.get(
   getReportsByWard
 );
 
-// Get reports summary (only executives and admins)
+// Get all reports (only executives and admins)
 router.get(
-  '/summary',
+  '/',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  getReportsSummary
+  getAllReports
 );
 
-// Export reports to Excel (only executives and admins)
-router.get(
-  '/export',
+// Get report by ID (all authenticated users)
+router.get('/:id', authenticate, getReportById);
+
+// Update report (all authenticated users)
+router.put('/:id', authenticate, updateReport);
+
+// Delete report (only executives and admins)
+router.delete(
+  '/:id',
   authenticate,
   authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  exportReports
+  deleteReport
 );
 
 export default router;

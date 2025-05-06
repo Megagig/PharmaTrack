@@ -11,6 +11,8 @@ import {
   LoadingOverlay,
   Alert,
   Badge,
+  Modal,
+  Box,
 } from '@mantine/core';
 import { pharmacyService, Pharmacy } from '../../services/pharmacyService';
 import { reportService, Report } from '../../services/reportService';
@@ -36,6 +38,9 @@ export function ComplianceMonitoring() {
     nonCompliantCount: 0,
     neverSubmittedCount: 0,
   });
+  const [viewPharmacyModalOpen, setViewPharmacyModalOpen] = useState(false);
+  const [selectedPharmacy, setSelectedPharmacy] =
+    useState<PharmacyWithCompliance | null>(null);
 
   // Fetch pharmacies and reports
   useEffect(() => {
@@ -270,6 +275,79 @@ export function ComplianceMonitoring() {
           </Table>
         </Paper>
       </div>
+
+      <Modal
+        opened={viewPharmacyModalOpen}
+        onClose={() => {
+          setViewPharmacyModalOpen(false);
+          setSelectedPharmacy(null);
+        }}
+        size="lg"
+      >
+        <Box>
+          <Title order={2} mb="md">
+            Pharmacy Compliance Details
+          </Title>
+          {selectedPharmacy && (
+            <div>
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Pharmacy Information
+                </Text>
+                <Text>
+                  <strong>Name:</strong> {selectedPharmacy.name}
+                </Text>
+                <Text>
+                  <strong>PCN License:</strong>{' '}
+                  {selectedPharmacy.pcnLicenseNumber}
+                </Text>
+                <Text>
+                  <strong>Address:</strong> {selectedPharmacy.address}
+                </Text>
+                <Text>
+                  <strong>Ward:</strong> {selectedPharmacy.ward}
+                </Text>
+                <Text>
+                  <strong>LGA:</strong> {selectedPharmacy.lga}
+                </Text>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Compliance Status
+                </Text>
+                <Text>
+                  <strong>Last Report:</strong> {selectedPharmacy.lastReport}
+                </Text>
+                <Text>
+                  <strong>Reports Submitted:</strong>{' '}
+                  {selectedPharmacy.reportsSubmitted}
+                </Text>
+                <Text>
+                  <strong>Compliance Score:</strong>{' '}
+                  {selectedPharmacy.complianceScore}%
+                </Text>
+              </Paper>
+
+              <Paper withBorder p="md">
+                <Text fw={700} size="lg" mb="md">
+                  Contact Information
+                </Text>
+                <Text>
+                  <strong>Pharmacist in Charge:</strong>{' '}
+                  {selectedPharmacy.pharmacistInCharge}
+                </Text>
+                <Text>
+                  <strong>Phone:</strong> {selectedPharmacy.phoneNumber}
+                </Text>
+                <Text>
+                  <strong>Email:</strong> {selectedPharmacy.email || 'N/A'}
+                </Text>
+              </Paper>
+            </div>
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 }

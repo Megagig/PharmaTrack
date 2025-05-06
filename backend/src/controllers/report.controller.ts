@@ -8,8 +8,6 @@ export class ReportController {
   async createReport(req: Request, res: Response): Promise<void> {
     try {
       const data: ReportCreateRequest = req.body;
-
-      // Get pharmacyId from authenticated user or from request body
       const pharmacyId = req.user?.pharmacyId || req.body.pharmacyId;
 
       if (!pharmacyId) {
@@ -20,6 +18,7 @@ export class ReportController {
       const result = await reportService.createReport(pharmacyId, data);
       res.status(201).json(result);
     } catch (error: any) {
+      console.error('Error in createReport:', error);
       res.status(400).json({ message: error.message });
     }
   }
@@ -30,13 +29,13 @@ export class ReportController {
       const result = await reportService.getReportById(id);
       res.status(200).json(result);
     } catch (error: any) {
+      console.error('Error in getReportById:', error);
       res.status(404).json({ message: error.message });
     }
   }
 
   async getReportsByPharmacy(req: Request, res: Response): Promise<void> {
     try {
-      // Get pharmacyId from authenticated user or from request params
       const pharmacyId = req.user?.pharmacyId || req.params.pharmacyId;
 
       if (!pharmacyId) {
@@ -47,6 +46,7 @@ export class ReportController {
       const result = await reportService.getReportsByPharmacy(pharmacyId);
       res.status(200).json(result);
     } catch (error: any) {
+      console.error('Error in getReportsByPharmacy:', error);
       res.status(500).json({ message: error.message });
     }
   }
@@ -56,6 +56,7 @@ export class ReportController {
       const result = await reportService.getAllReports();
       res.status(200).json(result);
     } catch (error: any) {
+      console.error('Error in getAllReports:', error);
       res.status(500).json({ message: error.message });
     }
   }
@@ -67,6 +68,7 @@ export class ReportController {
       const result = await reportService.updateReport(id, data);
       res.status(200).json(result);
     } catch (error: any) {
+      console.error('Error in updateReport:', error);
       res.status(400).json({ message: error.message });
     }
   }
@@ -77,6 +79,7 @@ export class ReportController {
       const result = await reportService.deleteReport(id);
       res.status(200).json(result);
     } catch (error: any) {
+      console.error('Error in deleteReport:', error);
       res.status(404).json({ message: error.message });
     }
   }
@@ -92,14 +95,29 @@ export class ReportController {
         return;
       }
 
-      const result = await reportService.getReportsByDateRange(
-        new Date(startDate as string),
-        new Date(endDate as string)
-      );
+      // Parse ISO date strings to Date objects
+      const start = new Date(startDate as string);
+      const end = new Date(endDate as string);
 
+      // Validate dates
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        res.status(400).json({ message: 'Invalid date format' });
+        return;
+      }
+
+      // Ensure start date is not after end date
+      if (start > end) {
+        res.status(400).json({ message: 'Start date must be before end date' });
+        return;
+      }
+
+      const result = await reportService.getReportsByDateRange(start, end);
       res.status(200).json(result);
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      console.error('Error in getReportsByDateRange:', error);
+      res
+        .status(500)
+        .json({ message: error.message || 'Failed to fetch reports' });
     }
   }
 
@@ -109,6 +127,7 @@ export class ReportController {
       const result = await reportService.getReportsByLGA(lga);
       res.status(200).json(result);
     } catch (error: any) {
+      console.error('Error in getReportsByLGA:', error);
       res.status(500).json({ message: error.message });
     }
   }
@@ -119,6 +138,7 @@ export class ReportController {
       const result = await reportService.getReportsByWard(ward);
       res.status(200).json(result);
     } catch (error: any) {
+      console.error('Error in getReportsByWard:', error);
       res.status(500).json({ message: error.message });
     }
   }
@@ -128,6 +148,7 @@ export class ReportController {
       const result = await reportService.getReportsSummary();
       res.status(200).json(result);
     } catch (error: any) {
+      console.error('Error in getReportsSummary:', error);
       res.status(500).json({ message: error.message });
     }
   }
@@ -149,7 +170,6 @@ export class ReportController {
         format as 'detailed' | 'summary'
       );
 
-      // Set headers for file download
       res.setHeader(
         'Content-Type',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -163,6 +183,7 @@ export class ReportController {
 
       res.send(buffer);
     } catch (error: any) {
+      console.error('Error in exportReports:', error);
       res.status(500).json({ message: error.message });
     }
   }

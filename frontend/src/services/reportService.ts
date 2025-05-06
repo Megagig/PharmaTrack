@@ -1,8 +1,8 @@
 import api from './api';
 
-// Types
 export interface Report {
   id: string;
+  pharmacyId: string;
   reportDate: Date;
   patientsServed: number;
   maleCount?: number;
@@ -22,13 +22,15 @@ export interface Report {
   stockouts?: boolean;
   supplyDelays?: boolean;
   notes?: string;
-  pharmacyId: string;
-  createdAt: Date;
-  updatedAt: Date;
   pharmacy?: {
+    id: string;
     name: string;
     ward: string;
     lga: string;
+    address: string;
+    phoneNumber: string;
+    email?: string;
+    pharmacistInCharge: string;
   };
 }
 
@@ -62,11 +64,10 @@ export interface ReportSummary {
   totalAdverseReactions: number;
 }
 
-// API calls
 export const reportService = {
-  // Get all reports (for executives/admins)
-  getAllReports: async (): Promise<Report[]> => {
-    const response = await api.get<Report[]>('/reports');
+  // Create new report
+  createReport: async (data: ReportCreateRequest): Promise<Report> => {
+    const response = await api.post<Report>('/reports', data);
     return response.data;
   },
 
@@ -76,9 +77,9 @@ export const reportService = {
     return response.data;
   },
 
-  // Create new report
-  createReport: async (data: ReportCreateRequest): Promise<Report> => {
-    const response = await api.post<Report>('/reports', data);
+  // Get all reports (admin/executive only)
+  getAllReports: async (): Promise<Report[]> => {
+    const response = await api.get<Report[]>('/reports');
     return response.data;
   },
 

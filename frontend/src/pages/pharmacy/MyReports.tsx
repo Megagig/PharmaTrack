@@ -10,13 +10,14 @@ import {
   Modal,
   LoadingOverlay,
   Alert,
+  Box,
 } from '@mantine/core';
 import { useAuthStore } from '../../store/authStore';
 import { reportService, Report } from '../../services/reportService';
 
 export function MyReports() {
   const { user } = useAuthStore();
-  const [viewReportId, setViewReportId] = useState<string | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reports, setReports] = useState<Report[]>([]);
@@ -93,7 +94,7 @@ export function MyReports() {
     try {
       const report = await reportService.getReportById(id);
       setSelectedReport(report);
-      setViewReportId(id);
+      setViewModalOpen(true);
     } catch (error: any) {
       setError(
         error.response?.data?.message || 'Failed to load report details'
@@ -178,98 +179,109 @@ export function MyReports() {
 
       {/* Report Details Modal */}
       <Modal
-        opened={!!viewReportId && !!selectedReport}
+        opened={viewModalOpen}
         onClose={() => {
-          setViewReportId(null);
+          setViewModalOpen(false);
           setSelectedReport(null);
         }}
-        title={
-          <Title order={3}>
-            Report Details -{' '}
-            {selectedReport &&
-              new Date(selectedReport.reportDate).toLocaleDateString()}
-          </Title>
-        }
         size="lg"
       >
-        {selectedReport && (
-          <div>
-            <Group mb="md">
-              <Text fw={500}>Total Patients:</Text>
-              <Text>{selectedReport.patientsServed}</Text>
-            </Group>
+        <Box>
+          <Title order={2} mb="md">
+            Report Details
+          </Title>
+          {selectedReport && (
+            <div>
+              <Group mb="md">
+                <Text fw={500}>Total Patients:</Text>
+                <Text>{selectedReport.patientsServed}</Text>
+              </Group>
 
-            <Title order={4} mt="lg">
-              Patient Demographics
-            </Title>
-            <Group mb="md">
-              <Text>Male: {selectedReport.maleCount || 0}</Text>
-              <Text>Female: {selectedReport.femaleCount || 0}</Text>
-              <Text>Children: {selectedReport.childrenCount || 0}</Text>
-              <Text>Adults: {selectedReport.adultCount || 0}</Text>
-              <Text>Elderly: {selectedReport.elderlyCount || 0}</Text>
-            </Group>
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Patient Demographics
+                </Text>
+                <Group>
+                  <Text>Male: {selectedReport.maleCount || 0}</Text>
+                  <Text>Female: {selectedReport.femaleCount || 0}</Text>
+                  <Text>Children: {selectedReport.childrenCount || 0}</Text>
+                  <Text>Adults: {selectedReport.adultCount || 0}</Text>
+                  <Text>Elderly: {selectedReport.elderlyCount || 0}</Text>
+                </Group>
+              </Paper>
 
-            <Title order={4} mt="lg">
-              Medications & Ailments
-            </Title>
-            <Text fw={500}>Top Medications:</Text>
-            <Text mb="md">{selectedReport.topMedications.join(', ')}</Text>
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Medications & Ailments
+                </Text>
+                <Text fw={500}>Top Medications:</Text>
+                <Text mb="md">{selectedReport.topMedications.join(', ')}</Text>
 
-            <Text fw={500}>Common Ailments:</Text>
-            <Text mb="md">{selectedReport.commonAilments.join(', ')}</Text>
+                <Text fw={500}>Common Ailments:</Text>
+                <Text mb="md">{selectedReport.commonAilments.join(', ')}</Text>
 
-            <Text fw={500}>Adverse Drug Reactions:</Text>
-            <Text mb="md">{selectedReport.adverseDrugReactions}</Text>
+                <Text fw={500}>Adverse Drug Reactions:</Text>
+                <Text mb="md">{selectedReport.adverseDrugReactions}</Text>
 
-            <Text fw={500}>Adverse Reaction Details:</Text>
-            <Text mb="md">
-              {selectedReport.adverseReactionDetails || 'None'}
-            </Text>
+                <Text fw={500}>Adverse Reaction Details:</Text>
+                <Text mb="md">
+                  {selectedReport.adverseReactionDetails || 'None'}
+                </Text>
+              </Paper>
 
-            <Title order={4} mt="lg">
-              Public Health Activities
-            </Title>
-            <Group mb="md">
-              <Text>Referrals: {selectedReport.referralsMade}</Text>
-              <Text>
-                Immunizations: {selectedReport.immunizationsGiven || 0}
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Public Health Activities
+                </Text>
+                <Group mb="md">
+                  <Text>Referrals: {selectedReport.referralsMade}</Text>
+                  <Text>
+                    Immunizations: {selectedReport.immunizationsGiven || 0}
+                  </Text>
+                  <Text>
+                    Health Education:{' '}
+                    {selectedReport.healthEducationSessions || 0}
+                  </Text>
+                  <Text>BP Checks: {selectedReport.bpChecks || 0}</Text>
+                </Group>
+              </Paper>
+
+              <Paper withBorder p="md">
+                <Text fw={700} size="lg" mb="md">
+                  Supply Chain Issues
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Expired Drugs: {selectedReport.expiredDrugs ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Stockouts: {selectedReport.stockouts ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Supply Delays: {selectedReport.supplyDelays ? 'Yes' : 'No'}
+                  </Text>
+                </Group>
+              </Paper>
+
+              <Text fw={500} mt="lg">
+                Notes:
               </Text>
-              <Text>
-                Health Education: {selectedReport.healthEducationSessions || 0}
-              </Text>
-              <Text>BP Checks: {selectedReport.bpChecks || 0}</Text>
-            </Group>
+              <Text>{selectedReport.notes || 'No additional notes'}</Text>
 
-            <Title order={4} mt="lg">
-              Supply Chain Issues
-            </Title>
-            <Group mb="md">
-              <Text>
-                Expired Drugs: {selectedReport.expiredDrugs ? 'Yes' : 'No'}
-              </Text>
-              <Text>Stockouts: {selectedReport.stockouts ? 'Yes' : 'No'}</Text>
-              <Text>
-                Supply Delays: {selectedReport.supplyDelays ? 'Yes' : 'No'}
-              </Text>
-            </Group>
-
-            <Text fw={500}>Notes:</Text>
-            <Text>{selectedReport.notes || 'No additional notes'}</Text>
-
-            <Group justify="flex-end" mt="xl">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setViewReportId(null);
-                  setSelectedReport(null);
-                }}
-              >
-                Close
-              </Button>
-            </Group>
-          </div>
-        )}
+              <Group justify="flex-end" mt="xl">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setViewModalOpen(false);
+                    setSelectedReport(null);
+                  }}
+                >
+                  Close
+                </Button>
+              </Group>
+            </div>
+          )}
+        </Box>
       </Modal>
     </div>
   );

@@ -348,9 +348,9 @@ export function MedicationsTrends() {
 
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
           <Paper withBorder p="md" style={{ height: 400 }}>
-            <Title order={3} mb="md">
+            <Text fw={700} size="lg" mb="md">
               Top Medications
-            </Title>
+            </Text>
             {topMedicationsData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={topMedicationsData} layout="vertical">
@@ -370,9 +370,9 @@ export function MedicationsTrends() {
           </Paper>
 
           <Paper withBorder p="md" style={{ height: 400 }}>
-            <Title order={3} mb="md">
+            <Text fw={700} size="lg" mb="md">
               Common Ailments
-            </Title>
+            </Text>
             {ailmentsData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={ailmentsData} layout="vertical">
@@ -392,9 +392,9 @@ export function MedicationsTrends() {
           </Paper>
 
           <Paper withBorder p="md" style={{ height: 400 }}>
-            <Title order={3} mb="md">
+            <Text fw={700} size="lg" mb="md">
               Adverse Drug Reactions
-            </Title>
+            </Text>
             {adverseReactionsData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={adverseReactionsData}>
@@ -414,9 +414,9 @@ export function MedicationsTrends() {
           </Paper>
 
           <Paper withBorder p="md" style={{ height: 400 }}>
-            <Title order={3} mb="md">
-              Patient Age Groups
-            </Title>
+            <Text fw={700} size="lg" mb="md">
+              Patient Age Distribution
+            </Text>
             {ageGroupData.length > 0 &&
             ageGroupData.some((item) => item.value > 0) ? (
               <ResponsiveContainer width="100%" height={300}>

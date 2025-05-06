@@ -38,6 +38,22 @@ router.get(
   getAllPharmacies
 );
 
+// Get pharmacies by LGA (only executives and admins)
+router.get(
+  '/lga/:lga',
+  authenticate,
+  authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
+  getPharmaciesByLGA
+);
+
+// Get pharmacies by ward (only executives and admins)
+router.get(
+  '/ward/:ward',
+  authenticate,
+  authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
+  getPharmaciesByWard
+);
+
 // Get pharmacy by ID (all authenticated users)
 router.get('/:id', authenticate, getPharmacyById);
 
@@ -55,22 +71,6 @@ router.delete(
   authenticate,
   authorize([UserRole.ADMIN]),
   deletePharmacy
-);
-
-// Get pharmacies by LGA (only executives and admins)
-router.get(
-  '/lga/:lga',
-  authenticate,
-  authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  getPharmaciesByLGA
-);
-
-// Get pharmacies by ward (only executives and admins)
-router.get(
-  '/ward/:ward',
-  authenticate,
-  authorize([UserRole.EXECUTIVE, UserRole.ADMIN]),
-  getPharmaciesByWard
 );
 
 export default router;

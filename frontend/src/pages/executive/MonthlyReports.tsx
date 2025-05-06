@@ -1,44 +1,179 @@
-import { Title, Paper, Table, Group, Select, Button } from '@mantine/core';
+import { useState, useEffect } from 'react';
+import {
+  Title,
+  Paper,
+  Table,
+  Group,
+  Select,
+  Button,
+  Modal,
+  Box,
+  Text,
+  Alert,
+  LoadingOverlay,
+} from '@mantine/core';
+import { reportService, Report } from '../../services/reportService';
+import { pharmacyService } from '../../services/pharmacyService';
 
 export function MonthlyReports() {
-  // This would be fetched from the API in a real implementation
-  const mockReports = [
-    { id: '1', pharmacy: 'Pharmacy A', date: '2023-06-15', patientsServed: 120, ward: 'Ward 1', lga: 'LGA 1' },
-    { id: '2', pharmacy: 'Pharmacy B', date: '2023-06-12', patientsServed: 85, ward: 'Ward 2', lga: 'LGA 1' },
-    { id: '3', pharmacy: 'Pharmacy C', date: '2023-06-10', patientsServed: 95, ward: 'Ward 1', lga: 'LGA 2' },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [reports, setReports] = useState<Report[]>([]);
+  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [lgaFilter, setLgaFilter] = useState<string | null>('All LGAs');
+  const [wardFilter, setWardFilter] = useState<string | null>('All Wards');
+  const [monthFilter, setMonthFilter] = useState<string | null>(
+    getCurrentMonth()
+  );
+  const [lgas, setLgas] = useState<string[]>(['All LGAs']);
+  const [wards, setWards] = useState<string[]>(['All Wards']);
+
+  // Get current month in format "MMMM YYYY"
+  function getCurrentMonth() {
+    const date = new Date();
+    return `${date.toLocaleString('default', {
+      month: 'long',
+    })} ${date.getFullYear()}`;
+  }
+
+  // Get last 12 months for filter
+  function getMonths() {
+    const months = [];
+    const current = new Date();
+
+    for (let i = 0; i < 12; i++) {
+      const month = new Date(current.getFullYear(), current.getMonth() - i, 1);
+      months.push(
+        `${month.toLocaleString('default', {
+          month: 'long',
+        })} ${month.getFullYear()}`
+      );
+    }
+    return months;
+  }
+
+  // Fetch reports and location data
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Calculate date range based on month filter
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(endDate.getMonth() - 12); // Get last 12 months of data
+
+        // Fetch reports
+        const reportsData = await reportService.getReportsByDateRange(
+          startDate,
+          endDate
+        );
+        setReports(reportsData);
+        setFilteredReports(reportsData);
+
+        // Fetch pharmacies to get unique LGAs and wards
+        const pharmacies = await pharmacyService.getAllPharmacies();
+
+        // Extract unique LGAs and wards
+        const uniqueLgas = new Set<string>();
+        const uniqueWards = new Set<string>();
+        pharmacies.forEach((pharmacy) => {
+          uniqueLgas.add(pharmacy.lga);
+          uniqueWards.add(pharmacy.ward);
+        });
+
+        setLgas(['All LGAs', ...Array.from(uniqueLgas)]);
+        setWards(['All Wards', ...Array.from(uniqueWards)]);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to load data';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Filter reports based on selected filters
+  useEffect(() => {
+    let filtered = [...reports];
+
+    // Apply LGA filter
+    if (lgaFilter && lgaFilter !== 'All LGAs') {
+      filtered = filtered.filter(
+        (report) => report.pharmacy?.lga === lgaFilter
+      );
+    }
+
+    // Apply ward filter
+    if (wardFilter && wardFilter !== 'All Wards') {
+      filtered = filtered.filter(
+        (report) => report.pharmacy?.ward === wardFilter
+      );
+    }
+
+    // Apply month filter
+    if (monthFilter) {
+      const [filterMonth, filterYear] = monthFilter.split(' ');
+      filtered = filtered.filter((report) => {
+        const reportDate = new Date(report.reportDate);
+        return (
+          reportDate.getFullYear().toString() === filterYear &&
+          reportDate.toLocaleString('default', { month: 'long' }) ===
+            filterMonth
+        );
+      });
+    }
+
+    setFilteredReports(filtered);
+  }, [reports, lgaFilter, wardFilter, monthFilter]);
 
   return (
     <div>
-      <Title order={2} mb="lg">Monthly Reports</Title>
-      
+      <Title order={2} mb="lg">
+        Monthly Reports
+      </Title>
+
+      {error && (
+        <Alert color="red" mb="xl" withCloseButton onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
+
       <Group mb="xl">
         <Select
           label="Filter by LGA"
           placeholder="Select LGA"
-          data={['All LGAs', 'LGA 1', 'LGA 2', 'LGA 3']}
-          defaultValue="All LGAs"
+          data={lgas}
+          value={lgaFilter}
+          onChange={setLgaFilter}
           style={{ flex: 1 }}
         />
-        
+
         <Select
           label="Filter by Ward"
           placeholder="Select Ward"
-          data={['All Wards', 'Ward 1', 'Ward 2', 'Ward 3']}
-          defaultValue="All Wards"
+          data={wards}
+          value={wardFilter}
+          onChange={setWardFilter}
           style={{ flex: 1 }}
         />
-        
+
         <Select
           label="Filter by Month"
           placeholder="Select Month"
-          data={['June 2023', 'May 2023', 'April 2023', 'March 2023']}
-          defaultValue="June 2023"
+          data={getMonths()}
+          value={monthFilter}
+          onChange={setMonthFilter}
           style={{ flex: 1 }}
         />
       </Group>
-      
-      <Paper withBorder>
+
+      <Paper withBorder pos="relative">
+        <LoadingOverlay visible={loading} />
         <Table>
           <Table.Thead>
             <Table.Tr>
@@ -51,21 +186,178 @@ export function MonthlyReports() {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {mockReports.map((report) => (
-              <Table.Tr key={report.id}>
-                <Table.Td>{report.pharmacy}</Table.Td>
-                <Table.Td>{report.date}</Table.Td>
-                <Table.Td>{report.patientsServed}</Table.Td>
-                <Table.Td>{report.ward}</Table.Td>
-                <Table.Td>{report.lga}</Table.Td>
-                <Table.Td>
-                  <Button size="xs" variant="outline">View Details</Button>
+            {filteredReports.length > 0 ? (
+              filteredReports.map((report) => (
+                <Table.Tr key={report.id}>
+                  <Table.Td>{report.pharmacy?.name || 'Unknown'}</Table.Td>
+                  <Table.Td>
+                    {new Date(report.reportDate).toLocaleDateString()}
+                  </Table.Td>
+                  <Table.Td>{report.patientsServed}</Table.Td>
+                  <Table.Td>{report.pharmacy?.ward || 'Unknown'}</Table.Td>
+                  <Table.Td>{report.pharmacy?.lga || 'Unknown'}</Table.Td>
+                  <Table.Td>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      onClick={() => {
+                        setViewModalOpen(true);
+                        setSelectedReport(report);
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </Table.Td>
+                </Table.Tr>
+              ))
+            ) : (
+              <Table.Tr>
+                <Table.Td colSpan={6} style={{ textAlign: 'center' }}>
+                  {loading ? 'Loading...' : 'No reports found'}
                 </Table.Td>
               </Table.Tr>
-            ))}
+            )}
           </Table.Tbody>
         </Table>
       </Paper>
+
+      <Modal
+        opened={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedReport(null);
+        }}
+        size="lg"
+      >
+        <Box>
+          <Title order={2} mb="md">
+            Report Details
+          </Title>
+          {selectedReport && (
+            <div>
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Pharmacy Information
+                </Text>
+                <Text>
+                  <strong>Pharmacy:</strong>{' '}
+                  {selectedReport.pharmacy?.name || 'Unknown'}
+                </Text>
+                <Text>
+                  <strong>Ward:</strong>{' '}
+                  {selectedReport.pharmacy?.ward || 'Unknown'}
+                </Text>
+                <Text>
+                  <strong>LGA:</strong>{' '}
+                  {selectedReport.pharmacy?.lga || 'Unknown'}
+                </Text>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Report Overview
+                </Text>
+                <Text>
+                  <strong>Report Date:</strong>{' '}
+                  {new Date(selectedReport.reportDate).toLocaleDateString()}
+                </Text>
+                <Text>
+                  <strong>Patients Served:</strong>{' '}
+                  {selectedReport.patientsServed}
+                </Text>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Patient Demographics
+                </Text>
+                <Group>
+                  <Text>Male: {selectedReport.maleCount || 0}</Text>
+                  <Text>Female: {selectedReport.femaleCount || 0}</Text>
+                  <Text>Children: {selectedReport.childrenCount || 0}</Text>
+                  <Text>Adults: {selectedReport.adultCount || 0}</Text>
+                  <Text>Elderly: {selectedReport.elderlyCount || 0}</Text>
+                </Group>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Medications & Ailments
+                </Text>
+                <Text fw={500}>Top Medications:</Text>
+                <Text mb="md">
+                  {selectedReport.topMedications?.join(', ') || 'None reported'}
+                </Text>
+
+                <Text fw={500}>Common Ailments:</Text>
+                <Text mb="md">
+                  {selectedReport.commonAilments?.join(', ') || 'None reported'}
+                </Text>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Adverse Reactions
+                </Text>
+                <Text>
+                  <strong>Total Reactions:</strong>{' '}
+                  {selectedReport.adverseDrugReactions}
+                </Text>
+                <Text>
+                  <strong>Details:</strong>{' '}
+                  {selectedReport.adverseReactionDetails || 'None'}
+                </Text>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Public Health Activities
+                </Text>
+                <Group>
+                  <Text>Referrals: {selectedReport.referralsMade}</Text>
+                  <Text>
+                    Immunizations: {selectedReport.immunizationsGiven || 0}
+                  </Text>
+                  <Text>
+                    Health Education:{' '}
+                    {selectedReport.healthEducationSessions || 0}
+                  </Text>
+                  <Text>BP Checks: {selectedReport.bpChecks || 0}</Text>
+                </Group>
+              </Paper>
+
+              <Paper withBorder p="md">
+                <Text fw={700} size="lg" mb="md">
+                  Supply Chain Issues
+                </Text>
+                <Group>
+                  <Text>
+                    Expired Drugs: {selectedReport.expiredDrugs ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Stockouts: {selectedReport.stockouts ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Supply Delays: {selectedReport.supplyDelays ? 'Yes' : 'No'}
+                  </Text>
+                </Group>
+              </Paper>
+
+              <Group justify="flex-end" mt="xl">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setViewModalOpen(false);
+                    setSelectedReport(null);
+                  }}
+                >
+                  Close
+                </Button>
+              </Group>
+            </div>
+          )}
+        </Box>
+      </Modal>
     </div>
   );
 }
