@@ -33,11 +33,39 @@ export class AuthController {
 
   async login(req: Request, res: Response): Promise<void> {
     try {
-      const data: LoginRequest = req.body;
+      // Log the login attempt
+      console.log('Login request received:', { email: req.body.email });
+
+      // Validate request body
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        res.status(400).json({ message: 'Email and password are required' });
+        return;
+      }
+
+      // Attempt login
+      const data: LoginRequest = { email, password };
       const result = await authService.login(data);
+
+      // Log successful login
+      console.log('Login successful for user:', {
+        id: result.user.id,
+        email: result.user.email,
+        role: result.user.role,
+      });
+
+      // Return user data and token
       res.status(200).json(result);
     } catch (error: any) {
-      res.status(401).json({ message: error.message });
+      // Log the error
+      console.error('Login error:', error.message);
+
+      // Return appropriate error response
+      res.status(401).json({
+        message: error.message || 'Authentication failed',
+        success: false,
+      });
     }
   }
 

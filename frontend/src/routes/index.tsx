@@ -4,6 +4,7 @@ import { pharmacyRoutes } from './PharmacyRoutes';
 import { publicRoutes } from './PublicRoutes';
 import App from '../App';
 import { Login } from '../pages/Login';
+import { LoginNew } from '../pages/LoginNew';
 
 const routes: RouteObject[] = [
   {
@@ -11,8 +12,12 @@ const routes: RouteObject[] = [
     element: <App />,
   },
   {
-    path: '/login',
+    path: '/login-old',
     element: <Login />,
+  },
+  {
+    path: '/login',
+    element: <LoginNew />,
   },
   ...publicRoutes,
   ...executiveRoutes,

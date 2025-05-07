@@ -4,14 +4,6 @@ import { UserRole } from '../store/authStore';
 // API base URL
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// Create a dedicated axios instance for auth
-const authApi = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
 // Types
 export interface LoginRequest {
   email: string;
@@ -53,102 +45,138 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
-// API calls
+// Direct API calls without using the shared axios instance
 export const authService = {
   // Login user
   login: async (data: LoginRequest): Promise<AuthResponse> => {
     try {
       console.log('Sending login request to:', `${API_URL}/auth/login`);
-      const response = await authApi.post<AuthResponse>('/auth/login', data);
-      console.log('Login successful:', response.data.user.email);
+      
+      const response = await axios({
+        method: 'post',
+        url: `${API_URL}/auth/login`,
+        data: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('Login successful:', response.data);
       return response.data;
     } catch (error) {
       console.error('Login failed:', error);
-
+      
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.message || error.message;
-        throw errorMessage;
+        throw new Error(errorMessage);
       }
-
-      throw 'An unexpected error occurred';
+      
+      throw new Error('An unexpected error occurred');
     }
   },
 
   // Register user (executive or admin)
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
     try {
-      const response = await authApi.post<AuthResponse>('/auth/register', data);
+      const response = await axios({
+        method: 'post',
+        url: `${API_URL}/auth/register`,
+        data: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
       return response.data;
     } catch (error) {
       console.error('Registration failed:', error);
-
+      
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.message || error.message;
-        throw errorMessage;
+        throw new Error(errorMessage);
       }
-
-      throw 'Registration failed';
+      
+      throw new Error('Registration failed');
     }
   },
 
   // Register pharmacy with user
-  registerPharmacy: async (
-    data: PharmacyRegisterRequest
-  ): Promise<AuthResponse> => {
+  registerPharmacy: async (data: PharmacyRegisterRequest): Promise<AuthResponse> => {
     try {
-      const response = await authApi.post<AuthResponse>(
-        '/auth/register-pharmacy',
-        data
-      );
+      const response = await axios({
+        method: 'post',
+        url: `${API_URL}/auth/register-pharmacy`,
+        data: data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
       return response.data;
     } catch (error) {
       console.error('Pharmacy registration failed:', error);
-
+      
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.message || error.message;
-        throw errorMessage;
+        throw new Error(errorMessage);
       }
-
-      throw 'Pharmacy registration failed';
+      
+      throw new Error('Pharmacy registration failed');
     }
   },
 
   // Change password
-  changePassword: async (
-    data: ChangePasswordRequest
-  ): Promise<{ message: string }> => {
+  changePassword: async (data: ChangePasswordRequest): Promise<{ message: string }> => {
     try {
-      const response = await authApi.post<{ message: string }>(
-        '/auth/change-password',
-        data
-      );
+      const token = localStorage.getItem('token');
+      
+      const response = await axios({
+        method: 'post',
+        url: `${API_URL}/auth/change-password`,
+        data: data,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
       return response.data;
     } catch (error) {
       console.error('Password change failed:', error);
-
+      
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.message || error.message;
-        throw errorMessage;
+        throw new Error(errorMessage);
       }
-
-      throw 'Password change failed';
+      
+      throw new Error('Password change failed');
     }
   },
 
   // Get current user profile
   getCurrentUser: async (): Promise<AuthResponse['user']> => {
     try {
-      const response = await authApi.get<AuthResponse['user']>('/auth/me');
+      const token = localStorage.getItem('token');
+      
+      const response = await axios({
+        method: 'get',
+        url: `${API_URL}/auth/me`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
       return response.data;
     } catch (error) {
       console.error('Failed to get user profile:', error);
-
+      
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.message || error.message;
-        throw errorMessage;
+        throw new Error(errorMessage);
       }
-
-      throw 'Failed to get user profile';
+      
+      throw new Error('Failed to get user profile');
     }
   },
 };

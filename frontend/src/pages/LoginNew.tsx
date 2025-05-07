@@ -19,10 +19,10 @@ import {
 } from '@mantine/core';
 import { useAuthStore } from '../store/authStore';
 import { UserRole } from '../store/authStore';
-import { authService } from '../services/authService';
+// Using fetch API directly instead of authService
 import { PublicLayout } from '../components/layout/PublicLayout';
 
-export function Login() {
+export function LoginNew() {
   const navigate = useNavigate();
   const location = useLocation();
   const login = useAuthStore((state) => state.login);
@@ -54,33 +54,70 @@ export function Login() {
       // Log the login attempt (without the password)
       console.log(`Login attempt for ${email} as ${userType}`);
 
-      // Call the login API
-      const response = await authService.login({
-        email: email.trim(),
-        password,
+      // Call the login API directly with fetch
+      const API_URL =
+        import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      console.log('Using API URL:', API_URL);
+
+      // Use XMLHttpRequest for better error handling
+      const data = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_URL}/auth/login`);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              console.log('Login successful:', data);
+              resolve(data);
+            } catch (e) {
+              console.error('Error parsing response:', e);
+              reject(new Error('Invalid response format'));
+            }
+          } else {
+            try {
+              const errorData = JSON.parse(xhr.responseText);
+              console.error('Login failed:', errorData);
+              reject(new Error(errorData.message || 'Login failed'));
+            } catch (e) {
+              console.error('Error parsing error response:', e);
+              reject(new Error(`Login failed with status ${xhr.status}`));
+            }
+          }
+        };
+
+        xhr.onerror = function () {
+          console.error('Network error');
+          reject(new Error('Network error'));
+        };
+
+        xhr.send(
+          JSON.stringify({
+            email: email.trim(),
+            password,
+          })
+        );
       });
 
       // Store user data in auth store
-      login(response.user, response.token);
+      login(data.user, data.token);
 
       // Redirect based on user role
-      if (
-        response.user.role === 'EXECUTIVE' ||
-        response.user.role === 'ADMIN'
-      ) {
+      if (data.user.role === 'EXECUTIVE' || data.user.role === 'ADMIN') {
         navigate('/executive/dashboard');
-      } else if (response.user.role === 'PHARMACY') {
+      } else if (data.user.role === 'PHARMACY') {
         navigate('/pharmacy/dashboard');
       } else {
         // Fallback for unknown roles
         navigate('/');
-        console.error('Unknown user role:', response.user.role);
+        console.error('Unknown user role:', data.user.role);
       }
     } catch (error) {
       console.error('Login failed:', error);
       setError(
-        typeof error === 'string'
-          ? error
+        error instanceof Error
+          ? error.message
           : 'Login failed. Please check your credentials.'
       );
     } finally {

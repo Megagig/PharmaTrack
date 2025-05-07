@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 async function testLogin(email: string, password: string) {
   try {
     console.log(`\nTesting login for email: ${email}`);
-    
+
     // Find user by email
     const user = await prisma.user.findUnique({
       where: { email },
@@ -51,13 +51,13 @@ async function testLogin(email: string, password: string) {
     console.log('  ID:', user.id);
     console.log('  Email:', user.email);
     console.log('  Role:', user.role);
-    
+
     if (user.pharmacy) {
       console.log('  Pharmacy:', user.pharmacy.name);
     }
-    
+
     console.log('  Token:', token.substring(0, 20) + '...');
-    
+
     return { success: true, user, token };
   } catch (error) {
     console.error('Error during login test:', error);
@@ -68,17 +68,16 @@ async function testLogin(email: string, password: string) {
 async function main() {
   try {
     // Test with valid credentials
-    await testLogin('pharmacy@example.com', 'pharmacy123');
-    
+    await testLogin('pharmacy@example.com', 'password123');
+
+    // Test with another pharmacy user
+    await testLogin('megagigsolution@gmail.com', 'password123');
+
     // Test with invalid password
     await testLogin('pharmacy@example.com', 'wrongpassword');
-    
+
     // Test with non-existent user
     await testLogin('nonexistent@example.com', 'password123');
-    
-    // Test executive login
-    await testLogin('executive@example.com', 'executive123');
-    
   } catch (error) {
     console.error('Error in main function:', error);
   } finally {

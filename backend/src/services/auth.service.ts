@@ -58,39 +58,74 @@ export class AuthService {
   async login(data: LoginRequest) {
     const { email, password } = data;
 
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    try {
+      console.log('Login attempt for email:', email);
 
-    if (!user) {
-      throw new Error('Invalid email or password');
-    }
+      // Validate input
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+      // Find user by email
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          pharmacy: true,
+        },
+      });
 
-    if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
-    }
+      // Check if user exists
+      if (!user) {
+        console.log('User not found with email:', email);
+        throw new Error('Invalid email or password');
+      }
 
-    // Generate JWT token
-    const token = this.generateToken({
-      id: user.id,
-      email: user.email,
-      role: user.role as UserRole,
-      pharmacyId: user.pharmacyId || undefined,
-    });
-
-    return {
-      user: {
+      console.log('User found:', {
         id: user.id,
         email: user.email,
         role: user.role,
         pharmacyId: user.pharmacyId,
-      },
-      token,
-    };
+      });
+
+      // Verify password
+      console.log('Stored hashed password:', user.password);
+      console.log('Attempting to verify password...');
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+      console.log('Password validation result:', isPasswordValid);
+
+      if (!isPasswordValid) {
+        console.log('Invalid password for user:', email);
+        throw new Error('Invalid email or password');
+      }
+
+      console.log('Password validated successfully for user:', email);
+
+      // Generate JWT token
+      const token = this.generateToken({
+        id: user.id,
+        email: user.email,
+        role: user.role as UserRole,
+        pharmacyId: user.pharmacyId || undefined,
+      });
+
+      console.log('JWT token generated for user:', email);
+
+      // Return user data and token
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          pharmacyId: user.pharmacyId,
+        },
+        token,
+      };
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   }
 
   async registerPharmacy(data: PharmacyRegisterRequest) {
