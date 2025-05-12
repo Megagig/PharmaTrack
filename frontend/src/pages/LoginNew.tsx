@@ -101,17 +101,27 @@ export function LoginNew() {
       });
 
       // Store user data in auth store
-      login(data.user, data.token);
+      // Type assertion for the API response
+      const responseData = data as { 
+        user: { 
+          id: string; 
+          email: string; 
+          role: UserRole;
+          pharmacyId?: string;
+        }, 
+        token: string 
+      };
+      
+      login(responseData.user, responseData.token);
 
       // Redirect based on user role
-      if (data.user.role === 'EXECUTIVE' || data.user.role === 'ADMIN') {
+      if (responseData.user.role === 'EXECUTIVE' || responseData.user.role === 'ADMIN') {
         navigate('/executive/dashboard');
-      } else if (data.user.role === 'PHARMACY') {
+      } else if (responseData.user.role === 'PHARMACY') {
         navigate('/pharmacy/dashboard');
       } else {
         // Fallback for unknown roles
-        navigate('/');
-        console.error('Unknown user role:', data.user.role);
+        console.error('Unknown user role:', responseData.user.role);
       }
     } catch (error) {
       console.error('Login failed:', error);

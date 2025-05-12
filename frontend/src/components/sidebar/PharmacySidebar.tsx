@@ -1,6 +1,7 @@
-import { NavLink, Stack, Button, Box, Text, Group, useMantineTheme, Badge, Avatar, useMantineColorScheme } from '@mantine/core';
+import { NavLink, Stack, Button, Box, Text, Group, useMantineTheme, Badge, Avatar, Collapse, UnstyledButton } from '@mantine/core';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { useState } from 'react';
 import { 
   IconLayoutDashboard, 
   IconFileReport, 
@@ -13,7 +14,14 @@ import {
   IconChevronRight,
   IconReportAnalytics,
   IconSettings,
-  IconBell
+  IconBell,
+  IconChevronDown,
+  IconShoppingCart,
+  IconCash,
+  IconTruckDelivery,
+  IconUsers,
+  IconReportMoney,
+  IconChartBar
 } from '@tabler/icons-react';
 
 // Define sidebar navigation items
@@ -26,6 +34,7 @@ interface NavItem {
     color: string;
   };
   isNew?: boolean;
+  children?: NavItem[];
 }
 
 // Navigation items for pharmacy users
@@ -35,6 +44,7 @@ export function PharmacySidebar() {
   const location = useLocation();
   const { logout, user } = useAuthStore();
   const theme = useMantineTheme();
+  const [openedMenu, setOpenedMenu] = useState<string | null>(null);
   
   // Get the pharmacy name from the user object
   const pharmacyName = user?.pharmacyId ? 'Your Pharmacy' : 'Your Pharmacy';
@@ -46,6 +56,10 @@ export function PharmacySidebar() {
   };
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+  
+  const toggleMenu = (menuName: string) => {
+    setOpenedMenu(openedMenu === menuName ? null : menuName);
+  };
 
   // Navigation items for pharmacy users
   const navItems: NavItem[] = [
@@ -55,10 +69,55 @@ export function PharmacySidebar() {
       icon: <IconLayoutDashboard size={20} stroke={1.5} />,
     },
     {
+      path: '/pharmacy/inventory',
+      label: 'Inventory',
+      icon: <IconPackage size={20} stroke={1.5} />,
+      isNew: true,
+      children: [
+        {
+          path: '/pharmacy/inventory/products',
+          label: 'Products',
+          icon: <IconPackage size={18} stroke={1.5} />,
+        },
+        {
+          path: '/pharmacy/inventory/purchases',
+          label: 'Purchases',
+          icon: <IconTruckDelivery size={18} stroke={1.5} />,
+        },
+        {
+          path: '/pharmacy/inventory/sales',
+          label: 'Sales',
+          icon: <IconShoppingCart size={18} stroke={1.5} />,
+        },
+        {
+          path: '/pharmacy/inventory/suppliers',
+          label: 'Suppliers',
+          icon: <IconUsers size={18} stroke={1.5} />,
+        },
+      ],
+    },
+    {
+      path: '/pharmacy/finance',
+      label: 'Finance',
+      icon: <IconCash size={20} stroke={1.5} />,
+      isNew: true,
+      children: [
+        {
+          path: '/pharmacy/finance/transactions',
+          label: 'Transactions',
+          icon: <IconReportMoney size={18} stroke={1.5} />,
+        },
+        {
+          path: '/pharmacy/finance/reports',
+          label: 'Financial Reports',
+          icon: <IconChartBar size={18} stroke={1.5} />,
+        },
+      ],
+    },
+    {
       path: '/pharmacy/submit-report',
       label: 'Submit Report',
       icon: <IconFileReport size={20} stroke={1.5} />,
-      isNew: true,
     },
     {
       path: '/pharmacy/my-reports',
@@ -68,11 +127,6 @@ export function PharmacySidebar() {
         text: '3',
         color: 'teal',
       },
-    },
-    {
-      path: '/pharmacy/stock',
-      label: 'Inventory',
-      icon: <IconPackage size={20} stroke={1.5} />,
     },
     {
       path: '/pharmacy/analytics',
@@ -137,45 +191,116 @@ export function PharmacySidebar() {
       <Box style={{ flex: 1, overflowY: 'auto' }} px="xs">
         <Stack gap="xs">
           {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              component={Link}
-              to={item.path}
-              label={
-                <Group justify="space-between" wrap="nowrap" style={{ width: '100%' }}>
-                  <Group gap="xs">
-                    {item.icon}
-                    <Text size="sm">{item.label}</Text>
-                    {item.isNew && (
-                      <Badge size="xs" variant="filled" color="indigo">
-                        New
-                      </Badge>
-                    )}
-                  </Group>
+            <Box key={item.path}>
+              {item.children ? (
+                <>
+                  <UnstyledButton
+                    onClick={() => toggleMenu(item.label)}
+                    style={{
+                      width: '100%',
+                      borderRadius: theme.radius.md,
+                      padding: '8px 12px',
+                      backgroundColor: openedMenu === item.label ? theme.colors.teal[0] : 'transparent',
+                      '&:hover': {
+                        backgroundColor: theme.colors.teal[0],
+                      },
+                    }}
+                  >
+                    <Group justify="space-between" wrap="nowrap" style={{ width: '100%' }}>
+                      <Group gap="xs">
+                        {item.icon}
+                        <Text size="sm" fw={500}>{item.label}</Text>
+                        {item.isNew && (
+                          <Badge size="xs" variant="filled" color="indigo">
+                            New
+                          </Badge>
+                        )}
+                      </Group>
+                      
+                      <Group gap="xs">
+                        {item.badge && (
+                          <Badge size="sm" variant="filled" color={item.badge.color} radius="xl">
+                            {item.badge.text}
+                          </Badge>
+                        )}
+                        <IconChevronDown 
+                          size={16} 
+                          style={{ 
+                            transform: openedMenu === item.label ? 'rotate(180deg)' : 'none',
+                            transition: 'transform 200ms ease'
+                          }} 
+                        />
+                      </Group>
+                    </Group>
+                  </UnstyledButton>
                   
-                  <Group gap="xs">
-                    {item.badge && (
-                      <Badge size="sm" variant="filled" color={item.badge.color} radius="xl">
-                        {item.badge.text}
-                      </Badge>
-                    )}
-                    <IconChevronRight 
-                      size={16} 
-                      style={{ 
-                        opacity: isActive(item.path) ? 1 : 0.3,
-                        transition: 'opacity 150ms ease'
-                      }} 
-                    />
-                  </Group>
-                </Group>
-              }
-              active={isActive(item.path)}
-              color="teal"
-              style={{
-                borderRadius: theme.radius.md,
-                marginBottom: 4,
-              }}
-            />
+                  <Collapse in={openedMenu === item.label}>
+                    <Box pl="md" pr="xs">
+                      <Stack gap="xs" mt="xs">
+                        {item.children.map((child) => (
+                          <NavLink
+                            key={child.path}
+                            component={Link}
+                            to={child.path}
+                            label={
+                              <Group gap="xs">
+                                {child.icon}
+                                <Text size="sm">{child.label}</Text>
+                              </Group>
+                            }
+                            active={isActive(child.path)}
+                            color="teal"
+                            style={{
+                              borderRadius: theme.radius.md,
+                              marginBottom: 2,
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
+                  </Collapse>
+                </>
+              ) : (
+                <NavLink
+                  component={Link}
+                  to={item.path}
+                  label={
+                    <Group justify="space-between" wrap="nowrap" style={{ width: '100%' }}>
+                      <Group gap="xs">
+                        {item.icon}
+                        <Text size="sm">{item.label}</Text>
+                        {item.isNew && (
+                          <Badge size="xs" variant="filled" color="indigo">
+                            New
+                          </Badge>
+                        )}
+                      </Group>
+                      
+                      <Group gap="xs">
+                        {item.badge && (
+                          <Badge size="sm" variant="filled" color={item.badge.color} radius="xl">
+                            {item.badge.text}
+                          </Badge>
+                        )}
+                        <IconChevronRight 
+                          size={16} 
+                          style={{ 
+                            opacity: isActive(item.path) ? 1 : 0.3,
+                            transition: 'opacity 150ms ease'
+                          }} 
+                        />
+                      </Group>
+                    </Group>
+                  }
+                  active={isActive(item.path)}
+                  color="teal"
+                  style={{
+                    borderRadius: theme.radius.md,
+                    marginBottom: 4,
+                  }}
+                />
+              )}
+            </Box>
           ))}
         </Stack>
       </Box>

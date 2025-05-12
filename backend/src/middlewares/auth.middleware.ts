@@ -37,6 +37,9 @@ export const authenticate = (
   }
 };
 
+// Alias for authenticate to maintain consistency with route naming conventions
+export const protect = authenticate;
+
 export const authorize = (roles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {

@@ -9,6 +9,13 @@ import { Support } from '../pages/pharmacy/Support';
 import { AuditLogs } from '../pages/common/AuditLogs';
 import { useAuthStore } from '../store/authStore';
 
+// Inventory Module Pages
+import { InventoryDashboard } from '../pages/pharmacy/inventory/InventoryDashboard';
+import { ProductsPage } from '../pages/pharmacy/inventory/ProductsPage';
+import { SuppliersPage } from '../pages/pharmacy/inventory/SuppliersPage';
+import { PurchasesPage } from '../pages/pharmacy/inventory/PurchasesPage';
+import { SalesPage } from '../pages/pharmacy/inventory/SalesPage';
+
 const PharmacyRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useAuthStore();
 
@@ -100,6 +107,57 @@ export const pharmacyRoutes: RouteObject[] = [
       <PharmacyRoute>
         <PharmacyLayout>
           <AuditLogs />
+        </PharmacyLayout>
+      </PharmacyRoute>
+    ),
+  },
+  // Inventory Module Routes
+  {
+    path: '/pharmacy/inventory',
+    element: (
+      <PharmacyRoute>
+        <PharmacyLayout>
+          <InventoryDashboard />
+        </PharmacyLayout>
+      </PharmacyRoute>
+    ),
+  },
+  {
+    path: '/pharmacy/inventory/products',
+    element: (
+      <PharmacyRoute>
+        <PharmacyLayout>
+          <ProductsPage />
+        </PharmacyLayout>
+      </PharmacyRoute>
+    ),
+  },
+  {
+    path: '/pharmacy/inventory/suppliers',
+    element: (
+      <PharmacyRoute>
+        <PharmacyLayout>
+          <SuppliersPage />
+        </PharmacyLayout>
+      </PharmacyRoute>
+    ),
+  },
+  {
+    path: '/pharmacy/inventory/purchases',
+    element: (
+      <PharmacyRoute>
+        <PharmacyLayout>
+          <PurchasesPage />
+        </PharmacyLayout>
+      </PharmacyRoute>
+    ),
+  },
+  {
+    path: '/pharmacy/inventory/sales',
+    element: (
+      <PharmacyRoute>
+        <PharmacyLayout>
+          <SalesPage />
         </PharmacyLayout>
       </PharmacyRoute>
     ),

@@ -15,7 +15,7 @@ const api = axios.create({
 
 // Add request interceptor to add auth token to requests
 api.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
+  (config: any) => {
     const token = useAuthStore.getState().token;
 
     // Log token for debugging (remove in production)
@@ -72,7 +72,7 @@ api.interceptors.response.use(
 
     // Get the most specific error message available
     const errorMessage =
-      error.response?.data?.message ||
+      (error.response?.data as any)?.message ||
       (typeof error.response?.data === 'string'
         ? error.response?.data
         : null) ||
