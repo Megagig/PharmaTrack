@@ -1,201 +1,198 @@
-import { NavLink, Stack, Title, Divider, Button, Box, Text, Group, useMantineTheme } from '@mantine/core';
+import { NavLink, Stack, Button, Box, Text, Group, useMantineTheme, Badge, Avatar, useMantineColorScheme } from '@mantine/core';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { 
+  IconLayoutDashboard, 
+  IconFileReport, 
+  IconHistory, 
+  IconPackage, 
+  IconUser, 
+  IconList, 
+  IconHelp, 
+  IconLogout,
+  IconChevronRight,
+  IconReportAnalytics,
+  IconSettings,
+  IconBell
+} from '@tabler/icons-react';
 
-// Icons for sidebar items
-const DashboardIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="9"></rect>
-    <rect x="14" y="3" width="7" height="5"></rect>
-    <rect x="14" y="12" width="7" height="9"></rect>
-    <rect x="3" y="16" width="7" height="5"></rect>
-  </svg>
-);
+// Define sidebar navigation items
+interface NavItem {
+  path: string;
+  label: string;
+  icon: React.ReactNode;
+  badge?: {
+    text: string;
+    color: string;
+  };
+  isNew?: boolean;
+}
 
-const ReportIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-    <polyline points="14 2 14 8 20 8"></polyline>
-    <line x1="16" y1="13" x2="8" y2="13"></line>
-    <line x1="16" y1="17" x2="8" y2="17"></line>
-    <polyline points="10 9 9 9 8 9"></polyline>
-  </svg>
-);
-
-const HistoryIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-    <path d="M3 3v5h5"></path>
-    <path d="M12 7v5l4 2"></path>
-  </svg>
-);
-
-const StockIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 6v14H4V6l8-4 8 4Z"></path>
-    <path d="M4 6h16"></path>
-    <path d="M12 10v8"></path>
-    <path d="M8 10v8"></path>
-    <path d="M16 10v8"></path>
-  </svg>
-);
-
-const ProfileIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-    <circle cx="12" cy="7" r="4"></circle>
-  </svg>
-);
-
-const AuditLogsIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3v12"></path>
-    <path d="M6 7h12"></path>
-    <path d="M17 17H5a2 2 0 0 0-2 2v2h16v-2a2 2 0 0 0-2-2Z"></path>
-  </svg>
-);
-
-const SupportIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"></circle>
-    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-  </svg>
-);
-
-const LogoutIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-    <polyline points="16 17 21 12 16 7"></polyline>
-    <line x1="21" y1="12" x2="9" y2="12"></line>
-  </svg>
-);
+// Navigation items for pharmacy users
 
 export function PharmacySidebar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const logout = useAuthStore((state) => state.logout);
+  const { logout, user } = useAuthStore();
   const theme = useMantineTheme();
+  
+  // Get the pharmacy name from the user object
+  const pharmacyName = user?.pharmacyId ? 'Your Pharmacy' : 'Your Pharmacy';
+  const pharmacyInitial = pharmacyName.charAt(0).toUpperCase();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+
+  // Navigation items for pharmacy users
+  const navItems: NavItem[] = [
+    {
+      path: '/pharmacy/dashboard',
+      label: 'Dashboard',
+      icon: <IconLayoutDashboard size={20} stroke={1.5} />,
+    },
+    {
+      path: '/pharmacy/submit-report',
+      label: 'Submit Report',
+      icon: <IconFileReport size={20} stroke={1.5} />,
+      isNew: true,
+    },
+    {
+      path: '/pharmacy/my-reports',
+      label: 'My Reports',
+      icon: <IconHistory size={20} stroke={1.5} />,
+      badge: {
+        text: '3',
+        color: 'teal',
+      },
+    },
+    {
+      path: '/pharmacy/stock',
+      label: 'Inventory',
+      icon: <IconPackage size={20} stroke={1.5} />,
+    },
+    {
+      path: '/pharmacy/analytics',
+      label: 'Analytics',
+      icon: <IconReportAnalytics size={20} stroke={1.5} />,
+    },
+    {
+      path: '/pharmacy/profile',
+      label: 'Profile',
+      icon: <IconUser size={20} stroke={1.5} />,
+    },
+    {
+      path: '/pharmacy/audit-logs',
+      label: 'Audit Logs',
+      icon: <IconList size={20} stroke={1.5} />,
+    },
+    {
+      path: '/pharmacy/notifications',
+      label: 'Notifications',
+      icon: <IconBell size={20} stroke={1.5} />,
+      badge: {
+        text: '5',
+        color: 'red',
+      },
+    },
+    {
+      path: '/pharmacy/settings',
+      label: 'Settings',
+      icon: <IconSettings size={20} stroke={1.5} />,
+    },
+    {
+      path: '/pharmacy/support',
+      label: 'Help & Support',
+      icon: <IconHelp size={20} stroke={1.5} />,
+    },
+  ];
 
   return (
-    <Stack h="100%" justify="space-between">
-      <Stack gap="md">
-        <Box mb="md">
-          <Title order={4} ta="center" py="md" c={theme.colors.blue[7]}>
-            Pharmacy Dashboard
-          </Title>
-          <Divider />
-        </Box>
-        
-        <NavLink
-          component={Link}
-          to="/pharmacy/dashboard"
-          label={
-            <Group>
-              <DashboardIcon />
-              <Text>Dashboard</Text>
-            </Group>
-          }
-          active={isActive('/pharmacy/dashboard')}
-          variant="light"
-        />
-        
-        <NavLink
-          component={Link}
-          to="/pharmacy/submit-report"
-          label={
-            <Group>
-              <ReportIcon />
-              <Text>Submit Monthly Report</Text>
-            </Group>
-          }
-          active={isActive('/pharmacy/submit-report')}
-          variant="light"
-        />
-        
-        <NavLink
-          component={Link}
-          to="/pharmacy/my-reports"
-          label={
-            <Group>
-              <HistoryIcon />
-              <Text>My Previous Reports</Text>
-            </Group>
-          }
-          active={isActive('/pharmacy/my-reports')}
-          variant="light"
-        />
-        
-        <NavLink
-          component={Link}
-          to="/pharmacy/stock"
-          label={
-            <Group>
-              <StockIcon />
-              <Text>Stock Management</Text>
-            </Group>
-          }
-          active={isActive('/pharmacy/stock')}
-          variant="light"
-        />
-        
-        <NavLink
-          component={Link}
-          to="/pharmacy/profile"
-          label={
-            <Group>
-              <ProfileIcon />
-              <Text>Profile</Text>
-            </Group>
-          }
-          active={isActive('/pharmacy/profile')}
-          variant="light"
-        />
-        
-        <NavLink
-          component={Link}
-          to="/pharmacy/audit-logs"
-          label={
-            <Group>
-              <AuditLogsIcon />
-              <Text>Audit Logs</Text>
-            </Group>
-          }
-          active={isActive('/pharmacy/audit-logs')}
-          variant="light"
-        />
-        
-        <NavLink
-          component={Link}
-          to="/pharmacy/support"
-          label={
-            <Group>
-              <SupportIcon />
-              <Text>Help / Support</Text>
-            </Group>
-          }
-          active={isActive('/pharmacy/support')}
-          variant="light"
-        />
-      </Stack>
+    <Stack h="100%" justify="space-between" gap={0}>
+      {/* Pharmacy Profile Section */}
+      <Box mb="xl">
+        <Group mb="md" p="md">
+          <Avatar 
+            color="teal" 
+            radius="xl" 
+            size="md"
+          >
+            {pharmacyInitial}
+          </Avatar>
+          <Box style={{ flex: 1 }}>
+            <Text fw={600} size="sm" lineClamp={1}>
+              {pharmacyName}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {user?.email || 'pharmacy@example.com'}
+            </Text>
+          </Box>
+        </Group>
+      </Box>
+
+      {/* Navigation Links */}
+      <Box style={{ flex: 1, overflowY: 'auto' }} px="xs">
+        <Stack gap="xs">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              component={Link}
+              to={item.path}
+              label={
+                <Group justify="space-between" wrap="nowrap" style={{ width: '100%' }}>
+                  <Group gap="xs">
+                    {item.icon}
+                    <Text size="sm">{item.label}</Text>
+                    {item.isNew && (
+                      <Badge size="xs" variant="filled" color="indigo">
+                        New
+                      </Badge>
+                    )}
+                  </Group>
+                  
+                  <Group gap="xs">
+                    {item.badge && (
+                      <Badge size="sm" variant="filled" color={item.badge.color} radius="xl">
+                        {item.badge.text}
+                      </Badge>
+                    )}
+                    <IconChevronRight 
+                      size={16} 
+                      style={{ 
+                        opacity: isActive(item.path) ? 1 : 0.3,
+                        transition: 'opacity 150ms ease'
+                      }} 
+                    />
+                  </Group>
+                </Group>
+              }
+              active={isActive(item.path)}
+              color="teal"
+              style={{
+                borderRadius: theme.radius.md,
+                marginBottom: 4,
+              }}
+            />
+          ))}
+        </Stack>
+      </Box>
       
-      <Button 
-        color="red" 
-        onClick={handleLogout}
-        mb="md"
-        leftSection={<LogoutIcon />}
-        variant="outline"
-        fullWidth
-      >
-        Logout
-      </Button>
+      {/* Logout Button */}
+      <Box p="md" pt="xl">
+        <Button 
+          color="red" 
+          onClick={handleLogout}
+          leftSection={<IconLogout size={18} />}
+          variant="light"
+          fullWidth
+          radius="md"
+        >
+          Logout
+        </Button>
+      </Box>
     </Stack>
   );
 }

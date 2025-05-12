@@ -1,54 +1,40 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  TextInput,
-  PasswordInput,
-  Button,
-  Paper,
-  Title,
-  Container,
-  Text,
-  Alert,
-  SegmentedControl,
-  Stack,
-  Group,
-  Divider,
-  Select,
-  Checkbox,
-  Box,
-  Stepper,
-  useMantineTheme,
+  TextInput, PasswordInput, Paper, Title, Container,
+  Group, Button, Stack, Text, Stepper, Checkbox,
+  Alert, Box, Center, SimpleGrid,
+  useMantineTheme, useMantineColorScheme,
 } from '@mantine/core';
-import { useAuthStore } from '../../store/authStore';
-import { UserRole } from '../../store/authStore';
 import { PublicLayout } from '../../components/layout/PublicLayout';
-import { PasswordStrengthIndicator } from '../../components/forms/PasswordStrengthIndicator';
-import {
-  validateEmail,
-  validatePassword,
-  validatePasswordMatch,
-  validateRequired,
-  validatePhoneNumber,
-  validateLicenseNumber,
-  ValidationResult,
-} from '../../utils/formValidation';
-import { AnimatedElement } from '../../components/animations/AnimatedElement';
 import { authService } from '../../services/authService';
+import { PasswordStrengthIndicator } from '../../components/forms/PasswordStrengthIndicator';
+import { validateEmail, validatePassword } from '../../utils/formValidation';
+import { LoadingAnimation } from '../../components/animations/LoadingAnimation';
+import { AnimatedElement } from '../../components/animations/AnimatedElement';
+import {
+  IconUser, IconAt, IconLock, IconBuilding, IconCheck,
+  IconMoon, IconSun, IconShieldLock, IconUsers, IconUserCheck,
+} from '@tabler/icons-react';
+
+// Define user role type
+type UserRole = 'PHARMACY' | 'EXECUTIVE';
 
 export function Register() {
   const navigate = useNavigate();
-  const theme = useMantineTheme();
   const [active, setActive] = useState(0);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [userType, setUserType] = useState<UserRole>('PHARMACY');
-
+  const [showAnimation, setShowAnimation] = useState(false);
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const theme = useMantineTheme();
+  
   // Form fields
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [pharmacyName, setPharmacyName] = useState('');
   const [pharmacyAddress, setPharmacyAddress] = useState('');
   const [pharmacyPhone, setPharmacyPhone] = useState('');
@@ -56,13 +42,14 @@ export function Register() {
   const [ward, setWard] = useState('');
   const [lga, setLga] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-
-  // Form validation
+  
+  // Error states
+  const [error, setError] = useState('');
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const [firstNameError, setFirstNameError] = useState('');
-  const [lastNameError, setLastNameError] = useState('');
   const [pharmacyNameError, setPharmacyNameError] = useState('');
   const [pharmacyAddressError, setPharmacyAddressError] = useState('');
   const [pharmacyPhoneError, setPharmacyPhoneError] = useState('');
@@ -70,563 +57,330 @@ export function Register() {
   const [wardError, setWardError] = useState('');
   const [lgaError, setLgaError] = useState('');
 
-  // Validate email on change
-  useEffect(() => {
-    if (email) {
-      const result = validateEmail(email);
-      setEmailError(result.errorMessage);
+  const validateFirstStep = () => {
+    let isValid = true;
+
+    if (!firstName.trim()) {
+      setFirstNameError('First name is required');
+      isValid = false;
+    } else {
+      setFirstNameError('');
+    }
+
+    if (!lastName.trim()) {
+      setLastNameError('Last name is required');
+      isValid = false;
+    } else {
+      setLastNameError('');
+    }
+
+    if (!email.trim()) {
+      setEmailError('Email is required');
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      isValid = false;
     } else {
       setEmailError('');
     }
-  }, [email]);
 
-  // Validate password on change
-  useEffect(() => {
-    if (password) {
-      const result = validatePassword(password);
-      setPasswordError(result.errorMessage);
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    } else if (!validatePassword(password)) {
+      setPasswordError(
+        'Password must be at least 8 characters and include a number and special character'
+      );
+      isValid = false;
     } else {
       setPasswordError('');
     }
-  }, [password]);
 
-  // Validate confirm password on change
-  useEffect(() => {
-    if (confirmPassword) {
-      const result = validatePasswordMatch(password, confirmPassword);
-      setConfirmPasswordError(result.errorMessage);
+    if (password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
+      isValid = false;
     } else {
       setConfirmPasswordError('');
     }
-  }, [confirmPassword, password]);
 
-  // Validate phone number on change
-  useEffect(() => {
-    if (pharmacyPhone) {
-      const result = validatePhoneNumber(pharmacyPhone);
-      setPharmacyPhoneError(result.errorMessage);
+    return isValid;
+  };
+
+  const validateSecondStep = () => {
+    if (userType !== 'PHARMACY') return true;
+
+    let isValid = true;
+
+    if (!pharmacyName.trim()) {
+      setPharmacyNameError('Pharmacy name is required');
+      isValid = false;
+    } else {
+      setPharmacyNameError('');
+    }
+
+    if (!pharmacyAddress.trim()) {
+      setPharmacyAddressError('Address is required');
+      isValid = false;
+    } else {
+      setPharmacyAddressError('');
+    }
+
+    if (!pharmacyPhone.trim()) {
+      setPharmacyPhoneError('Phone number is required');
+      isValid = false;
     } else {
       setPharmacyPhoneError('');
     }
-  }, [pharmacyPhone]);
 
-  // Validate license number on change
-  useEffect(() => {
-    if (licenseNumber) {
-      const result = validateLicenseNumber(licenseNumber);
-      setLicenseNumberError(result.errorMessage);
+    if (!licenseNumber.trim()) {
+      setLicenseNumberError('License number is required');
+      isValid = false;
     } else {
       setLicenseNumberError('');
     }
-  }, [licenseNumber]);
+
+    if (!ward.trim()) {
+      setWardError('Ward is required');
+      isValid = false;
+    } else {
+      setWardError('');
+    }
+
+    if (!lga.trim()) {
+      setLgaError('LGA is required');
+      isValid = false;
+    } else {
+      setLgaError('');
+    }
+
+    return isValid;
+  };
 
   const nextStep = () => {
-    if (active === 0) {
-      // Validate first step
-      let hasErrors = false;
-
-      // Validate required fields
-      if (!firstName) {
-        setFirstNameError('First name is required');
-        hasErrors = true;
-      }
-
-      if (!lastName) {
-        setLastNameError('Last name is required');
-        hasErrors = true;
-      }
-
-      // Validate email
-      const emailValidation = validateEmail(email);
-      if (!email || !emailValidation.isValid) {
-        setEmailError(emailValidation.errorMessage || 'Email is required');
-        hasErrors = true;
-      }
-
-      // Validate password
-      const passwordValidation = validatePassword(password);
-      if (!password || !passwordValidation.isValid) {
-        setPasswordError(
-          passwordValidation.errorMessage || 'Password is required'
-        );
-        hasErrors = true;
-      }
-
-      // Validate password match
-      const passwordMatchValidation = validatePasswordMatch(
-        password,
-        confirmPassword
-      );
-      if (!confirmPassword || !passwordMatchValidation.isValid) {
-        setConfirmPasswordError(
-          passwordMatchValidation.errorMessage || 'Confirm password is required'
-        );
-        hasErrors = true;
-      }
-
-      if (hasErrors) {
-        setError('Please correct the errors before proceeding');
-        return;
-      }
+    if (active === 0 && !validateFirstStep()) {
+      return;
     }
 
-    if (active === 1 && userType === 'PHARMACY') {
-      // Validate pharmacy details
-      let hasErrors = false;
-
-      // Validate required fields
-      if (!pharmacyName) {
-        setPharmacyNameError('Pharmacy name is required');
-        hasErrors = true;
-      }
-
-      if (!pharmacyAddress) {
-        setPharmacyAddressError('Pharmacy address is required');
-        hasErrors = true;
-      }
-
-      // Validate phone number
-      const phoneValidation = validatePhoneNumber(pharmacyPhone);
-      if (!pharmacyPhone || !phoneValidation.isValid) {
-        setPharmacyPhoneError(
-          phoneValidation.errorMessage || 'Phone number is required'
-        );
-        hasErrors = true;
-      }
-
-      // Validate license number
-      const licenseValidation = validateLicenseNumber(licenseNumber);
-      if (!licenseNumber || !licenseValidation.isValid) {
-        setLicenseNumberError(
-          licenseValidation.errorMessage || 'License number is required'
-        );
-        hasErrors = true;
-      }
-
-      // Validate ward and LGA
-      if (!ward) {
-        setWardError('Ward is required');
-        hasErrors = true;
-      }
-
-      if (!lga) {
-        setLgaError('LGA is required');
-        hasErrors = true;
-      }
-
-      if (hasErrors) {
-        setError('Please correct the errors before proceeding');
-        return;
-      }
+    if (active === 1 && !validateSecondStep()) {
+      return;
     }
 
-    setError('');
     setActive((current) => (current < 2 ? current + 1 : current));
   };
 
-  const prevStep = () =>
+  const prevStep = () => {
     setActive((current) => (current > 0 ? current - 1 : current));
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!agreeToTerms) {
       setError('You must agree to the Terms of Service and Privacy Policy');
       return;
     }
 
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
       if (userType === 'PHARMACY') {
-        // Register as pharmacy
-        const response = await authService.registerPharmacy({
+        // Register pharmacy
+        await authService.register({
           email,
           password,
           role: userType,
-          pharmacy: {
-            name: pharmacyName,
-            pharmacistInCharge: `${firstName} ${lastName}`,
-            pcnLicenseNumber: licenseNumber,
-            phoneNumber: pharmacyPhone,
-            email: email, // Using the same email for pharmacy and user
-            address: pharmacyAddress,
-            ward: ward,
-            lga: lga,
-          },
         });
 
-        // Navigate to login page after successful registration
-        navigate('/login', {
-          state: {
-            message: 'Pharmacy registration successful! Please log in.',
-          },
-        });
+        setShowAnimation(true);
+        setTimeout(() => {
+          navigate('/login', {
+            state: { message: 'Registration successful! You can now log in.' },
+          });
+        }, 2000);
       } else {
-        // Register as executive
-        const response = await authService.register({
+        // Register executive
+        await authService.register({
           email,
           password,
           role: userType,
         });
 
-        // Navigate to login page after successful registration
-        navigate('/login', {
-          state: {
-            message: 'Executive registration successful! Please log in.',
-          },
-        });
+        setShowAnimation(true);
+        setTimeout(() => {
+          navigate('/login', {
+            state: {
+              message:
+                'Registration submitted! Your account will be reviewed by an administrator.',
+            },
+          });
+        }, 2000);
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || 'An error occurred during registration'
-      );
-    } finally {
+      setError(err.message || 'Registration failed. Please try again.');
       setLoading(false);
     }
   };
 
+  if (showAnimation) {
+    return (
+      <Center style={{ height: '100vh', width: '100vw' }}>
+        <LoadingAnimation />
+      </Center>
+    );
+  }
+
   return (
     <PublicLayout>
-      <Container size="sm" py={50}>
-        <AnimatedElement type="fadeInDown">
-          <Title order={1} ta="center" mb="xl">
-            Create Your PharmaTrack Account
-          </Title>
-        </AnimatedElement>
-
-        <Paper withBorder shadow="md" p={{ base: 'md', sm: 30 }} radius="md">
-          <Stepper
-            active={active}
-            onStepClick={setActive}
-            breakpoint="sm"
-            mb="xl"
+      <Container size="xl" py={40}>
+        {/* Theme toggle button */}
+        <Box style={{ position: 'absolute', top: 20, right: 20 }}>
+          <Button
+            variant="subtle"
+            radius="xl"
+            size="sm"
+            onClick={() => toggleColorScheme()}
+            leftSection={colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
           >
-            <Stepper.Step
-              label="Account Setup"
-              description="Your credentials"
-            />
-            <Stepper.Step
-              label="Organization Details"
-              description="Your organization"
-            />
-            <Stepper.Step
-              label="Review & Submit"
-              description="Verify information"
-            />
-          </Stepper>
-
-          {active === 0 && (
-            <Stack>
-              <Text fw={700} size="lg" mb="md">
-                Account Credentials
-              </Text>
-              <AnimatedElement type="fadeInUp" delay={0.1}>
-                <Group grow>
-                  <TextInput
-                    label="First Name"
-                    placeholder="John"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    error={firstNameError}
-                  />
-                  <TextInput
-                    label="Last Name"
-                    placeholder="Doe"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    error={lastNameError}
-                  />
-                </Group>
-              </AnimatedElement>
-
-              <AnimatedElement type="fadeInUp" delay={0.2}>
-                <TextInput
-                  label="Email"
-                  placeholder="you@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  error={emailError}
-                />
-              </AnimatedElement>
-
-              <AnimatedElement type="fadeInUp" delay={0.3}>
-                <PasswordInput
-                  label="Password"
-                  placeholder="Create a strong password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  error={passwordError}
-                />
-                <PasswordStrengthIndicator password={password} />
-              </AnimatedElement>
-
-              <AnimatedElement type="fadeInUp" delay={0.4}>
-                <PasswordInput
-                  label="Confirm Password"
-                  placeholder="Confirm your password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  error={confirmPasswordError}
-                />
-              </AnimatedElement>
-
-              <Stack mb="md">
-                <Text fw={500} size="sm">
-                  Register As
-                </Text>
-                <SegmentedControl
-                  value={userType}
-                  onChange={(value) => setUserType(value as UserRole)}
-                  data={[
-                    { label: 'Pharmacy', value: 'PHARMACY' },
-                    { label: 'Executive', value: 'EXECUTIVE' },
-                  ]}
-                  fullWidth
-                />
-              </Stack>
-            </Stack>
-          )}
-
-          {active === 1 && (
-            <Stack>
-              <Text fw={700} size="lg" mb="md">
-                Organization Information
-              </Text>
-              {userType === 'PHARMACY' ? (
-                <Stack>
-                  <AnimatedElement type="fadeInUp" delay={0.1}>
-                    <TextInput
-                      label="Pharmacy Name"
-                      placeholder="Community Pharmacy"
-                      required
-                      value={pharmacyName}
-                      onChange={(e) => setPharmacyName(e.target.value)}
-                      error={pharmacyNameError}
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.2}>
-                    <TextInput
-                      label="Pharmacy Address"
-                      placeholder="123 Health Street, City"
-                      required
-                      value={pharmacyAddress}
-                      onChange={(e) => setPharmacyAddress(e.target.value)}
-                      error={pharmacyAddressError}
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.3}>
-                    <TextInput
-                      label="Pharmacy Phone"
-                      placeholder="08012345678"
-                      description="Nigerian format: 0801234XXXX or +2348012345XXX"
-                      required
-                      value={pharmacyPhone}
-                      onChange={(e) => setPharmacyPhone(e.target.value)}
-                      error={pharmacyPhoneError}
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.4}>
-                    <TextInput
-                      label="PCN License Number"
-                      placeholder="PCN12345"
-                      required
-                      value={licenseNumber}
-                      onChange={(e) => setLicenseNumber(e.target.value)}
-                      error={licenseNumberError}
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.5}>
-                    <Select
-                      label="Pharmacy Type"
-                      placeholder="Select pharmacy type"
-                      data={[
-                        'Community Pharmacy',
-                        'Hospital Pharmacy',
-                        'Clinical Pharmacy',
-                        'Retail Pharmacy',
-                        'Other',
-                      ]}
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.6}>
-                    <TextInput
-                      label="Ward"
-                      placeholder="Enter ward"
-                      required
-                      value={ward}
-                      onChange={(e) => setWard(e.target.value)}
-                      error={wardError}
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.7}>
-                    <TextInput
-                      label="Local Government Area (LGA)"
-                      placeholder="Enter LGA"
-                      required
-                      value={lga}
-                      onChange={(e) => setLga(e.target.value)}
-                      error={lgaError}
-                    />
-                  </AnimatedElement>
-                </Stack>
-              ) : (
-                <Stack>
-                  <AnimatedElement type="fadeInUp" delay={0.1}>
-                    <TextInput
-                      label="Organization Name"
-                      placeholder="Health Department"
-                      required
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.2}>
-                    <TextInput
-                      label="Department"
-                      placeholder="Pharmacy Oversight"
-                      required
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.3}>
-                    <TextInput
-                      label="Position/Title"
-                      placeholder="Director"
-                      required
-                    />
-                  </AnimatedElement>
-
-                  <AnimatedElement type="fadeInUp" delay={0.4}>
-                    <Select
-                      label="Access Level Requested"
-                      placeholder="Select access level"
-                      data={[
-                        'Regional Manager',
-                        'State Director',
-                        'National Administrator',
-                        'Analyst',
-                        'Other',
-                      ]}
-                    />
-                  </AnimatedElement>
-                </Stack>
-              )}
-            </Stack>
-          )}
-
-          {active === 2 && (
-            <Stack>
-              <Text fw={700} size="lg" mb="md">
-                Review Your Information
-              </Text>
-              <Paper withBorder p="md" mb="md">
-                <Text fw={700} size="md" mb="sm">
-                  Account Details
-                </Text>
-                <Text>
-                  {firstName} {lastName}
-                </Text>
-                <Text>{email}</Text>
-                <Text>Account Type: {userType}</Text>
-              </Paper>
-
-              {userType === 'PHARMACY' && (
-                <Paper withBorder p="md">
-                  <Text fw={700} size="md" mb="sm">
-                    Pharmacy Details
-                  </Text>
-                  <Text>{pharmacyName}</Text>
-                  <Text>{pharmacyAddress}</Text>
-                  <Text>{pharmacyPhone}</Text>
-                  <Text>License: {licenseNumber}</Text>
-                  <Text>Ward: {ward}</Text>
-                  <Text>LGA: {lga}</Text>
-                </Paper>
-              )}
-
-              <AnimatedElement type="fadeInUp" delay={0.4}>
-                <Checkbox
-                  label={
-                    <Text size="sm">
-                      I agree to the{' '}
-                      <Text
-                        component={Link}
-                        to="/terms"
-                        c={theme.colors.blue[6]}
-                        inherit
-                      >
-                        Terms of Service
-                      </Text>{' '}
-                      and{' '}
-                      <Text
-                        component={Link}
-                        to="/privacy"
-                        c={theme.colors.blue[6]}
-                        inherit
-                      >
-                        Privacy Policy
-                      </Text>
-                    </Text>
-                  }
-                  checked={agreeToTerms}
-                  onChange={(e) => setAgreeToTerms(e.target.checked)}
-                />
-              </AnimatedElement>
-
-              <AnimatedElement type="bounce" delay={0.5}>
-                <Button
-                  fullWidth
-                  onClick={handleSubmit}
-                  loading={loading}
-                  mt="md"
-                  size="lg"
-                >
-                  Complete Registration
-                </Button>
-              </AnimatedElement>
-            </Stack>
-          )}
-
-          {error && (
-            <Alert color="red" mb="md">
-              {error}
-            </Alert>
-          )}
-
-          <Group justify="space-between" mt="xl">
-            {active > 0 && (
-              <Button variant="default" onClick={prevStep}>
-                Back
-              </Button>
-            )}
-            {active < 2 && (
-              <Button onClick={nextStep} ml="auto">
-                Next Step
-              </Button>
-            )}
-          </Group>
-
-          <Divider my="lg" label="Or" labelPosition="center" />
-
-          <Text ta="center" size="sm">
-            Already have an account?{' '}
-            <Text component={Link} to="/login" c={theme.colors.blue[6]} inherit>
-              Log in
+            {colorScheme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </Button>
+        </Box>
+        
+        {/* Main content */}
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing={50}>
+          {/* Left side - branding */}
+          <Box style={{ zIndex: 1 }}>
+            <AnimatedElement type="fadeInDown">
+              <Title order={2} mb={30}>
+                Join the PharmaTrack Network
+              </Title>
+            </AnimatedElement>
+            
+            <Text size="xl" mb={40}>
+              Create your account to start managing your pharmacy data, submitting reports, and accessing insights.
             </Text>
-          </Text>
-        </Paper>
+            
+            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md" mb={50}>
+              {[
+                { title: 'Unified Access', description: 'Single platform for all your pharmacy management needs', icon: <IconShieldLock size={24} stroke={1.5} /> },
+                { title: 'Data Insights', description: 'Gain valuable insights from your pharmacy data', icon: <IconUsers size={24} stroke={1.5} /> },
+                { title: 'Role-Based Access', description: 'Permissions tailored to your role in the organization', icon: <IconUserCheck size={24} stroke={1.5} /> },
+              ].map((feature, index) => (
+                <Paper key={index} p="md" radius="md" withBorder>
+                  <Group mb={10}>
+                    <Box style={{ borderRadius: theme.radius.md, background: `linear-gradient(135deg, ${theme.colors.teal[5]} 0%, ${theme.colors.indigo[5]} 100%)`, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                      {feature.icon}
+                    </Box>
+                    <Text fw={600}>{feature.title}</Text>
+                  </Group>
+                  <Text size="sm" c="dimmed">{feature.description}</Text>
+                </Paper>
+              ))}
+            </SimpleGrid>
+          </Box>
+          
+          {/* Right side - registration form */}
+          <Box style={{ zIndex: 1 }}>
+            <Paper withBorder radius="lg" p={40}>
+              <Stepper active={active} onStepClick={setActive} mb="xl" color="teal" radius="md" iconSize={28}>
+                <Stepper.Step label="Account" description="Basic information" icon={<IconUser size={18} />} />
+                <Stepper.Step label="Details" description="Organization info" icon={<IconBuilding size={18} />} />
+                <Stepper.Step label="Review" description="Confirm details" icon={<IconCheck size={18} />} />
+              </Stepper>
+
+              {error && (
+                <Alert color="red" mb="md" onClose={() => setError('')} radius="md" title="Registration Error">
+                  {error}
+                </Alert>
+              )}
+
+              {active === 0 && (
+                <Stack gap="md">
+                  <Group grow>
+                    <TextInput label="First Name" placeholder="John" required value={firstName} onChange={(e) => setFirstName(e.target.value)} error={firstNameError} leftSection={<IconUser size={16} stroke={1.5} />} radius="md" />
+                    <TextInput label="Last Name" placeholder="Doe" required value={lastName} onChange={(e) => setLastName(e.target.value)} error={lastNameError} radius="md" />
+                  </Group>
+
+                  <TextInput label="Email Address" placeholder="you@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} error={emailError} leftSection={<IconAt size={16} stroke={1.5} />} radius="md" />
+
+                  <PasswordInput label="Password" placeholder="Create a secure password" required value={password} onChange={(e) => setPassword(e.target.value)} error={passwordError} leftSection={<IconLock size={16} stroke={1.5} />} radius="md" />
+                  <PasswordStrengthIndicator password={password} />
+
+                  <PasswordInput label="Confirm Password" placeholder="Confirm your password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} error={confirmPasswordError} leftSection={<IconLock size={16} stroke={1.5} />} radius="md" />
+                </Stack>
+              )}
+
+              {active === 1 && (
+                <Stack gap="md">
+                  <Group grow mb="md">
+                    <Button variant={userType === 'PHARMACY' ? 'filled' : 'light'} color="teal" onClick={() => setUserType('PHARMACY')} leftSection={<IconBuilding size={16} />} radius="md">Pharmacy</Button>
+                    <Button variant={userType === 'EXECUTIVE' ? 'filled' : 'light'} color="indigo" onClick={() => setUserType('EXECUTIVE')} leftSection={<IconUsers size={16} />} radius="md">Executive</Button>
+                  </Group>
+
+                  {userType === 'PHARMACY' && (
+                    <Stack gap="md">
+                      <TextInput label="Pharmacy Name" placeholder="Enter pharmacy name" required value={pharmacyName} onChange={(e) => setPharmacyName(e.target.value)} error={pharmacyNameError} radius="md" />
+                      <TextInput label="Pharmacy Address" placeholder="Enter full address" required value={pharmacyAddress} onChange={(e) => setPharmacyAddress(e.target.value)} error={pharmacyAddressError} radius="md" />
+                      <TextInput label="Phone Number" placeholder="Enter phone number" required value={pharmacyPhone} onChange={(e) => setPharmacyPhone(e.target.value)} error={pharmacyPhoneError} radius="md" />
+                      <TextInput label="License Number" placeholder="Enter license number" required value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} error={licenseNumberError} radius="md" />
+                      <Group grow>
+                        <TextInput label="Ward" placeholder="Enter ward" required value={ward} onChange={(e) => setWard(e.target.value)} error={wardError} radius="md" />
+                        <TextInput label="LGA" placeholder="Enter LGA" required value={lga} onChange={(e) => setLga(e.target.value)} error={lgaError} radius="md" />
+                      </Group>
+                    </Stack>
+                  )}
+                </Stack>
+              )}
+
+              {active === 2 && (
+                <Stack gap="md">
+                  <Paper withBorder p="md" radius="md">
+                    <Text fw={500} mb="xs">Account Information</Text>
+                    <SimpleGrid cols={2} spacing="xs">
+                      <Text size="sm" c="dimmed">First Name:</Text>
+                      <Text size="sm">{firstName}</Text>
+                      <Text size="sm" c="dimmed">Last Name:</Text>
+                      <Text size="sm">{lastName}</Text>
+                      <Text size="sm" c="dimmed">Email:</Text>
+                      <Text size="sm">{email}</Text>
+                      <Text size="sm" c="dimmed">Account Type:</Text>
+                      <Text size="sm">{userType === 'PHARMACY' ? 'Pharmacy' : 'Executive'}</Text>
+                    </SimpleGrid>
+                  </Paper>
+
+                  {userType === 'PHARMACY' && (
+                    <Paper withBorder p="md" radius="md">
+                      <Text fw={500} mb="xs">Pharmacy Information</Text>
+                      <SimpleGrid cols={2} spacing="xs">
+                        <Text size="sm" c="dimmed">Pharmacy Name:</Text>
+                        <Text size="sm">{pharmacyName}</Text>
+                        <Text size="sm" c="dimmed">Address:</Text>
+                        <Text size="sm">{pharmacyAddress}</Text>
+                        <Text size="sm" c="dimmed">Phone Number:</Text>
+                        <Text size="sm">{pharmacyPhone}</Text>
+                        <Text size="sm" c="dimmed">License Number:</Text>
+                        <Text size="sm">{licenseNumber}</Text>
+                        <Text size="sm" c="dimmed">Ward:</Text>
+                        <Text size="sm">{ward}</Text>
+                        <Text size="sm" c="dimmed">LGA:</Text>
+                        <Text size="sm">{lga}</Text>
+                      </SimpleGrid>
+                    </Paper>
+                  )}
+
+                  <Checkbox label="I agree to the Terms of Service and Privacy Policy" checked={agreeToTerms} onChange={(e) => setAgreeToTerms(e.currentTarget.checked)} mb="md" />
+                </Stack>
+              )}
+
+              <Group justify="space-between" mt="xl">
+                <Button variant="default" onClick={prevStep} disabled={active === 0}>Back</Button>
+                {active < 2 ? (
+                  <Button onClick={nextStep} color="teal">Next</Button>
+                ) : (
+                  <Button onClick={handleSubmit} color="teal" loading={loading} leftSection={<IconShieldLock size={16} />}>Complete Registration</Button>
+                )}
+              </Group>
+            </Paper>
+          </Box>
+        </SimpleGrid>
       </Container>
     </PublicLayout>
   );
