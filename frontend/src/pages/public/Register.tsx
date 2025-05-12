@@ -4,7 +4,7 @@ import {
   TextInput, PasswordInput, Paper, Title, Container,
   Group, Button, Stack, Text, Stepper, Checkbox,
   Alert, Box, Center, SimpleGrid,
-  useMantineTheme, useMantineColorScheme,
+  useMantineTheme, useMantineColorScheme, Select,
 } from '@mantine/core';
 import { PublicLayout } from '../../components/layout/PublicLayout';
 import { authService } from '../../services/authService';
@@ -56,6 +56,30 @@ export function Register() {
   const [licenseNumberError, setLicenseNumberError] = useState('');
   const [wardError, setWardError] = useState('');
   const [lgaError, setLgaError] = useState('');
+
+  // List of LGAs in Ogun State
+  const ogunLGAs = [
+    'Abeokuta North',
+    'Abeokuta South',
+    'Ado-Odo/Ota',
+    'Ewekoro',
+    'Ifo',
+    'Ijebu East',
+    'Ijebu North',
+    'Ijebu North East',
+    'Ijebu Ode',
+    'Ikenne',
+    'Imeko Afon',
+    'Ipokia',
+    'Obafemi Owode',
+    'Odogbolu',
+    'Odeda',
+    'Ogun Waterside',
+    'Remo North',
+    'Shagamu',
+    'Yewa North',
+    'Yewa South'
+  ];
 
   const validateFirstStep = () => {
     let isValid = true;
@@ -323,7 +347,16 @@ export function Register() {
                       <TextInput label="License Number" placeholder="Enter license number" required value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} error={licenseNumberError} radius="md" />
                       <Group grow>
                         <TextInput label="Ward" placeholder="Enter ward" required value={ward} onChange={(e) => setWard(e.target.value)} error={wardError} radius="md" />
-                        <TextInput label="LGA" placeholder="Enter LGA" required value={lga} onChange={(e) => setLga(e.target.value)} error={lgaError} radius="md" />
+                        <Select
+                          label="LGA"
+                          placeholder="Select your LGA"
+                          data={ogunLGAs}
+                          required
+                          value={lga}
+                          onChange={setLga}
+                          error={lgaError}
+                          radius="md"
+                        />
                       </Group>
                     </Stack>
                   )}
