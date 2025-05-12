@@ -39,7 +39,7 @@ export function Register() {
   const [pharmacyAddress, setPharmacyAddress] = useState('');
   const [pharmacyPhone, setPharmacyPhone] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
-  const [ward, setWard] = useState('');
+  const [zone, setZone] = useState('');
   const [lga, setLga] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   
@@ -54,7 +54,7 @@ export function Register() {
   const [pharmacyAddressError, setPharmacyAddressError] = useState('');
   const [pharmacyPhoneError, setPharmacyPhoneError] = useState('');
   const [licenseNumberError, setLicenseNumberError] = useState('');
-  const [wardError, setWardError] = useState('');
+  const [zoneError, setZoneError] = useState('');
   const [lgaError, setLgaError] = useState('');
 
   // List of LGAs in Ogun State
@@ -79,6 +79,16 @@ export function Register() {
     'Shagamu',
     'Yewa North',
     'Yewa South'
+  ];
+
+  // List of Zones in ACPN Ogun State
+  const acpnZones = [
+    'Ota',
+    'Fountain',
+    'Remo',
+    'Ijebu',
+    'Mowe',
+    'Abeokuta'
   ];
 
   const validateFirstStep = () => {
@@ -163,11 +173,11 @@ export function Register() {
       setLicenseNumberError('');
     }
 
-    if (!ward.trim()) {
-      setWardError('Ward is required');
+    if (!zone.trim()) {
+      setZoneError('Zone is required');
       isValid = false;
     } else {
-      setWardError('');
+      setZoneError('');
     }
 
     if (!lga.trim()) {
@@ -346,14 +356,23 @@ export function Register() {
                       <TextInput label="Phone Number" placeholder="Enter phone number" required value={pharmacyPhone} onChange={(e) => setPharmacyPhone(e.target.value)} error={pharmacyPhoneError} radius="md" />
                       <TextInput label="License Number" placeholder="Enter license number" required value={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} error={licenseNumberError} radius="md" />
                       <Group grow>
-                        <TextInput label="Ward" placeholder="Enter ward" required value={ward} onChange={(e) => setWard(e.target.value)} error={wardError} radius="md" />
+                        <Select
+                          label="Zone"
+                          placeholder="Select your Zone"
+                          data={acpnZones}
+                          required
+                          value={zone}
+                          onChange={(value) => setZone(value || '')}
+                          error={zoneError}
+                          radius="md"
+                        />
                         <Select
                           label="LGA"
                           placeholder="Select your LGA"
                           data={ogunLGAs}
                           required
                           value={lga}
-                          onChange={setLga}
+                          onChange={(value) => setLga(value || '')}
                           error={lgaError}
                           radius="md"
                         />
@@ -391,8 +410,8 @@ export function Register() {
                         <Text size="sm">{pharmacyPhone}</Text>
                         <Text size="sm" c="dimmed">License Number:</Text>
                         <Text size="sm">{licenseNumber}</Text>
-                        <Text size="sm" c="dimmed">Ward:</Text>
-                        <Text size="sm">{ward}</Text>
+                        <Text size="sm" c="dimmed">Zone:</Text>
+                        <Text size="sm">{zone}</Text>
                         <Text size="sm" c="dimmed">LGA:</Text>
                         <Text size="sm">{lga}</Text>
                       </SimpleGrid>
