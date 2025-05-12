@@ -6,6 +6,7 @@ import {
   PharmacyRegisterRequest,
   ChangePasswordRequest,
   AuthenticatedRequest,
+  PromoteUserRequest,
 } from '../types';
 
 const authService = new AuthService();
@@ -33,9 +34,6 @@ export class AuthController {
 
   async login(req: Request, res: Response): Promise<void> {
     try {
-      // Log the login attempt
-      console.log('Login request received:', { email: req.body.email });
-
       // Validate request body
       const { email, password } = req.body;
 
@@ -48,19 +46,9 @@ export class AuthController {
       const data: LoginRequest = { email, password };
       const result = await authService.login(data);
 
-      // Log successful login
-      console.log('Login successful for user:', {
-        id: result.user.id,
-        email: result.user.email,
-        role: result.user.role,
-      });
-
       // Return user data and token
       res.status(200).json(result);
     } catch (error: any) {
-      // Log the error
-      console.error('Login error:', error.message);
-
       // Return appropriate error response
       res.status(401).json({
         message: error.message || 'Authentication failed',
@@ -101,6 +89,33 @@ export class AuthController {
       const data: ChangePasswordRequest = req.body;
       await authService.changePassword(userId, data);
       res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  }
+
+  async promoteToExecutive(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> {
+    try {
+      const adminId = req.user?.id;
+      if (!adminId) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+
+      const data: PromoteUserRequest = req.body;
+      if (!data.userId) {
+        res.status(400).json({ message: 'User ID is required' });
+        return;
+      }
+
+      const result = await authService.promoteUserToExecutive(adminId, data);
+      res.status(200).json({
+        message: 'User promoted to executive successfully',
+        user: result
+      });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }

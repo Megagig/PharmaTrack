@@ -39,30 +39,63 @@ model Pharmacy {
 }
 
 model Report {
-  id                      String   @id @default(uuid())
-  reportDate              DateTime
-  patientsServed          Int
-  maleCount               Int?
-  femaleCount             Int?
-  childrenCount           Int?
-  adultCount              Int?
-  elderlyCount            Int?
-  topMedications          String[]
-  commonAilments          String[]
-  adverseDrugReactions    Int
-  adverseReactionDetails  String?
-  referralsMade           Int
-  immunizationsGiven      Int?
-  healthEducationSessions Int?
-  bpChecks                Int?
-  expiredDrugs            Boolean?
-  stockouts               Boolean?
-  supplyDelays            Boolean?
-  notes                   String?
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-  pharmacyId              String
-  pharmacy                Pharmacy @relation(fields: [pharmacyId], references: [id])
+  id                          String   @id @default(uuid())
+  reportDate                  DateTime
+  patientsServed              Int
+  maleCount                   Int?
+  femaleCount                 Int?
+  childrenCount               Int?
+  adultCount                  Int?
+  elderlyCount                Int?
+  topMedications              String[]
+  commonAilments              String[]
+  adverseDrugReactions        Int
+  adverseReactionDetails      String?
+  referralsMade               Int
+  immunizationsGiven          Int?
+  healthEducationSessions     Int?
+  bpChecks                    Int?
+  expiredDrugs                Boolean?
+  stockouts                   Boolean?
+  supplyDelays                Boolean?
+  notes                       String?
+
+  // Service Delivery Data
+  prescriptionsFilled         Int?
+  otcConsultations            Int?
+  mtmInterventions            Int?
+
+  // Economic Contribution
+  monthlyRevenue              Float?
+  staffPharmacists            Int?
+  staffTechnicians            Int?
+  staffOthers                 Int?
+  taxesPaid                   Float?
+  localSuppliersCount         Int?
+
+  // Challenges and Barriers
+  regulatoryComplianceCost    Float?
+  hasSubsidizedMedicines      Boolean?
+  insuranceInclusionIssues    Boolean?
+  fakeOrSubstandardDrugs      Int?
+  rejectedInsuranceClaims     Int?
+
+  // Public Health Role
+  publicHealthPartnerships    String[]
+
+  // Technology and Digital Adoption
+  usesElectronicRecords       Boolean?
+  usesMobileHealth            Boolean?
+  usesInventoryManagement     Boolean?
+
+  // Community Feedback
+  patientSatisfactionScore    Float?
+  timeComparedToHospital      Int?  // Time saved in minutes
+
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  pharmacyId                  String
+  pharmacy                    Pharmacy @relation(fields: [pharmacyId], references: [id])
 
   @@map("reports")
 }

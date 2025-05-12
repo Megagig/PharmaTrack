@@ -18,6 +18,12 @@ api.interceptors.request.use(
   (config: AxiosRequestConfig) => {
     const token = useAuthStore.getState().token;
 
+    // Log token for debugging (remove in production)
+    console.log(
+      'Using token for request:',
+      token ? 'Token exists' : 'No token'
+    );
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -25,6 +31,7 @@ api.interceptors.request.use(
     return config;
   },
   (error: AxiosError) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -44,15 +51,37 @@ api.interceptors.response.use(
 
     // Handle 401 Unauthorized errors (token expired or invalid)
     if (error.response?.status === 401) {
+      console.log('Authentication error: Token expired or invalid');
       // Log the user out
       useAuthStore.getState().logout();
       // Redirect to login page (this will be handled by the router)
       window.location.href = '/login';
     }
 
-    return Promise.reject(
-      error.response?.data?.message || error.message || 'An error occurred'
-    );
+    // Handle 403 Forbidden errors (insufficient permissions)
+    if (error.response?.status === 403) {
+      console.log('Authorization error: Insufficient permissions');
+      // You might want to redirect to a permission denied page or show a message
+    }
+
+    // Handle 400 Bad Request errors (validation errors)
+    if (error.response?.status === 400) {
+      console.log('Validation error:', error.response?.data);
+      // Return the specific error message for form validation
+    }
+
+    // Get the most specific error message available
+    const errorMessage =
+      error.response?.data?.message ||
+      (typeof error.response?.data === 'string'
+        ? error.response?.data
+        : null) ||
+      error.message ||
+      'An error occurred';
+
+    console.error('Error message:', errorMessage);
+
+    return Promise.reject(errorMessage);
   }
 );
 

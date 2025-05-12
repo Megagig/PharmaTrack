@@ -51,6 +51,39 @@ export interface Report {
   stockouts?: boolean;
   supplyDelays?: boolean;
   notes?: string;
+
+  // Service Delivery Data
+  prescriptionsFilled?: number;
+  otcConsultations?: number;
+  mtmInterventions?: number;
+
+  // Economic Contribution
+  monthlyRevenue?: number;
+  staffPharmacists?: number;
+  staffTechnicians?: number;
+  staffOthers?: number;
+  taxesPaid?: number;
+  localSuppliersCount?: number;
+
+  // Challenges and Barriers
+  regulatoryComplianceCost?: number;
+  hasSubsidizedMedicines?: boolean;
+  insuranceInclusionIssues?: boolean;
+  fakeOrSubstandardDrugs?: number;
+  rejectedInsuranceClaims?: number;
+
+  // Public Health Role
+  publicHealthPartnerships?: string[];
+
+  // Technology and Digital Adoption
+  usesElectronicRecords?: boolean;
+  usesMobileHealth?: boolean;
+  usesInventoryManagement?: boolean;
+
+  // Community Feedback
+  patientSatisfactionScore?: number;
+  timeComparedToHospital?: number;
+
   pharmacyId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -99,6 +132,38 @@ export interface ReportCreateRequest {
   stockouts?: boolean;
   supplyDelays?: boolean;
   notes?: string;
+
+  // Service Delivery Data
+  prescriptionsFilled?: number;
+  otcConsultations?: number;
+  mtmInterventions?: number;
+
+  // Economic Contribution
+  monthlyRevenue?: number;
+  staffPharmacists?: number;
+  staffTechnicians?: number;
+  staffOthers?: number;
+  taxesPaid?: number;
+  localSuppliersCount?: number;
+
+  // Challenges and Barriers
+  regulatoryComplianceCost?: number;
+  hasSubsidizedMedicines?: boolean;
+  insuranceInclusionIssues?: boolean;
+  fakeOrSubstandardDrugs?: number;
+  rejectedInsuranceClaims?: number;
+
+  // Public Health Role
+  publicHealthPartnerships?: string[];
+
+  // Technology and Digital Adoption
+  usesElectronicRecords?: boolean;
+  usesMobileHealth?: boolean;
+  usesInventoryManagement?: boolean;
+
+  // Community Feedback
+  patientSatisfactionScore?: number;
+  timeComparedToHospital?: number;
 }
 
 export interface PharmacyRegisterRequest {
@@ -123,6 +188,10 @@ export interface ReportSummary {
   totalPatientsServed: number;
   totalReferrals: number;
   totalAdverseReactions: number;
+}
+
+export interface PromoteUserRequest {
+  userId: string;
 }
 
 export interface JwtPayload {

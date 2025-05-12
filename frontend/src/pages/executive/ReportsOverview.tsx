@@ -355,14 +355,103 @@ export function ReportsOverview() {
           </Title>
           {selectedReport && (
             <div>
-              <Text>
-                Date: {new Date(selectedReport.reportDate).toLocaleDateString()}
-              </Text>
-              <Text>
-                Pharmacy: {selectedReport.pharmacy?.name || 'Unknown'}
-              </Text>
-              <Text>LGA: {selectedReport.pharmacy?.lga || 'Unknown'}</Text>
-              <Text>Patients Served: {selectedReport.patientsServed}</Text>
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Pharmacy Information
+                </Text>
+                <Text>
+                  <strong>Pharmacy:</strong>{' '}
+                  {selectedReport.pharmacy?.name || 'Unknown'}
+                </Text>
+                <Text>
+                  <strong>Ward:</strong>{' '}
+                  {selectedReport.pharmacy?.ward || 'Unknown'}
+                </Text>
+                <Text>
+                  <strong>LGA:</strong>{' '}
+                  {selectedReport.pharmacy?.lga || 'Unknown'}
+                </Text>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Report Overview
+                </Text>
+                <Text>
+                  <strong>Report Date:</strong>{' '}
+                  {new Date(selectedReport.reportDate).toLocaleDateString()}
+                </Text>
+                <Text>
+                  <strong>Patients Served:</strong>{' '}
+                  {selectedReport.patientsServed}
+                </Text>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Service Delivery Data
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Prescriptions Filled:{' '}
+                    {selectedReport.prescriptionsFilled || 0}
+                  </Text>
+                  <Text>
+                    OTC Consultations: {selectedReport.otcConsultations || 0}
+                  </Text>
+                  <Text>
+                    MTM Interventions: {selectedReport.mtmInterventions || 0}
+                  </Text>
+                </Group>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Economic Contribution
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Monthly Revenue: ₦
+                    {selectedReport.monthlyRevenue?.toLocaleString() || 0}
+                  </Text>
+                  <Text>
+                    Taxes Paid: ₦
+                    {selectedReport.taxesPaid?.toLocaleString() || 0}
+                  </Text>
+                </Group>
+                <Text fw={500} mb="xs">
+                  Staff:
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Pharmacists: {selectedReport.staffPharmacists || 0}
+                  </Text>
+                  <Text>
+                    Technicians: {selectedReport.staffTechnicians || 0}
+                  </Text>
+                  <Text>Others: {selectedReport.staffOthers || 0}</Text>
+                </Group>
+              </Paper>
+
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Technology Adoption
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Electronic Records:{' '}
+                    {selectedReport.usesElectronicRecords ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Mobile Health:{' '}
+                    {selectedReport.usesMobileHealth ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Inventory Management:{' '}
+                    {selectedReport.usesInventoryManagement ? 'Yes' : 'No'}
+                  </Text>
+                </Group>
+              </Paper>
             </div>
           )}
         </Box>

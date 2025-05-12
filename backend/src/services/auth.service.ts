@@ -8,6 +8,7 @@ import {
   PharmacyRegisterRequest,
   ChangePasswordRequest,
   UserRole,
+  PromoteUserRequest,
 } from '../types';
 
 export class AuthService {
@@ -59,7 +60,10 @@ export class AuthService {
     const { email, password } = data;
 
     try {
-      console.log('Login attempt for email:', email);
+      // Only log in development environment
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Login attempt for email:', email);
+      }
 
       // Validate input
       if (!email || !password) {
@@ -76,31 +80,21 @@ export class AuthService {
 
       // Check if user exists
       if (!user) {
-        console.log('User not found with email:', email);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('User not found with email:', email);
+        }
         throw new Error('Invalid email or password');
       }
 
-      console.log('User found:', {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        pharmacyId: user.pharmacyId,
-      });
-
-      // Verify password
-      console.log('Stored hashed password:', user.password);
-      console.log('Attempting to verify password...');
-
+      // Verify password (minimal logging)
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
-      console.log('Password validation result:', isPasswordValid);
-
       if (!isPasswordValid) {
-        console.log('Invalid password for user:', email);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Invalid password for user:', email);
+        }
         throw new Error('Invalid email or password');
       }
-
-      console.log('Password validated successfully for user:', email);
 
       // Generate JWT token
       const token = this.generateToken({
@@ -110,20 +104,22 @@ export class AuthService {
         pharmacyId: user.pharmacyId || undefined,
       });
 
-      console.log('JWT token generated for user:', email);
-
-      // Return user data and token
+      // Return user data and token with pharmacy information if available
       return {
         user: {
           id: user.id,
           email: user.email,
           role: user.role,
           pharmacyId: user.pharmacyId,
+          pharmacy: user.pharmacy || null,
         },
         token,
       };
     } catch (error) {
-      console.error('Login error:', error);
+      // Only log detailed errors in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Login error:', error);
+      }
       throw error;
     }
   }
@@ -263,6 +259,48 @@ export class AuthService {
     });
 
     return true;
+  }
+
+  async promoteUserToExecutive(adminId: string, data: PromoteUserRequest) {
+    // Verify that the requester is an admin
+    const admin = await prisma.user.findUnique({
+      where: { id: adminId },
+    });
+
+    if (!admin || admin.role !== UserRole.ADMIN) {
+      throw new Error('Only administrators can promote users');
+    }
+
+    // Find the user to promote
+    const userToPromote = await prisma.user.findUnique({
+      where: { id: data.userId },
+    });
+
+    if (!userToPromote) {
+      throw new Error('User not found');
+    }
+
+    if (userToPromote.role === UserRole.EXECUTIVE) {
+      throw new Error('User is already an executive');
+    }
+
+    if (userToPromote.role === UserRole.ADMIN) {
+      throw new Error('Cannot change role of an administrator');
+    }
+
+    // Update the user's role to EXECUTIVE
+    const updatedUser = await prisma.user.update({
+      where: { id: data.userId },
+      data: { role: UserRole.EXECUTIVE },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        pharmacyId: true,
+      },
+    });
+
+    return updatedUser;
   }
 
   private generateToken(payload: JwtPayload): string {

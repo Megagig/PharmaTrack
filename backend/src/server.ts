@@ -8,6 +8,7 @@ import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth.routes';
 import pharmacyRoutes from './routes/pharmacy.routes';
 import reportRoutes from './routes/report.routes';
+import fdaRoutes from './routes/fda.routes';
 
 // Load environment variables
 dotenv.config();
@@ -16,9 +17,9 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 5000;
 
-// Initialize Prisma client with connection retry logic
+// Initialize Prisma client with minimal logging
 export const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
+  log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   datasources: {
     db: {
       url: process.env.DATABASE_URL,
@@ -43,14 +44,26 @@ app.use(
   })
 );
 
-// Log all requests
+// Log only non-GET requests in production
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  if (process.env.NODE_ENV !== 'production' || req.method !== 'GET') {
+    console.log(`${req.method} ${req.url}`);
+  }
   next();
 });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+
+// Use minimal logging in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(
+    morgan('tiny', {
+      skip: (req) => req.method === 'GET', // Skip logging GET requests in production
+    })
+  );
+} else {
+  app.use(morgan('dev'));
+}
 
 // Basic routes
 app.get('/', (req: Request, res: Response): void => {
@@ -89,6 +102,7 @@ app.get('/api/db-test', async (req: Request, res: Response): Promise<void> => {
 app.use('/api/auth', authRoutes);
 app.use('/api/pharmacies', pharmacyRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/fda', fdaRoutes);
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: any): void => {
@@ -100,8 +114,9 @@ app.use((err: any, req: Request, res: Response, next: any): void => {
 });
 
 // Start server
-app.listen(port, () => {
+const server = app.listen(Number(port), '0.0.0.0', () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+  console.log(`Server is also accessible at http://0.0.0.0:${port}`);
 });
 
 // Handle Prisma disconnect on app termination

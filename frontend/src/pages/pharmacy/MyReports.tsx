@@ -246,7 +246,7 @@ export function MyReports() {
                 </Group>
               </Paper>
 
-              <Paper withBorder p="md">
+              <Paper withBorder p="md" mb="md">
                 <Text fw={700} size="lg" mb="md">
                   Supply Chain Issues
                 </Text>
@@ -259,6 +259,139 @@ export function MyReports() {
                   </Text>
                   <Text>
                     Supply Delays: {selectedReport.supplyDelays ? 'Yes' : 'No'}
+                  </Text>
+                </Group>
+              </Paper>
+
+              {/* Service Delivery Data */}
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Service Delivery Data
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Prescriptions Filled:{' '}
+                    {selectedReport.prescriptionsFilled || 0}
+                  </Text>
+                  <Text>
+                    OTC Consultations: {selectedReport.otcConsultations || 0}
+                  </Text>
+                  <Text>
+                    MTM Interventions: {selectedReport.mtmInterventions || 0}
+                  </Text>
+                </Group>
+              </Paper>
+
+              {/* Economic Contribution */}
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Economic Contribution
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Monthly Revenue: ₦
+                    {selectedReport.monthlyRevenue?.toLocaleString() || 0}
+                  </Text>
+                  <Text>
+                    Taxes Paid: ₦
+                    {selectedReport.taxesPaid?.toLocaleString() || 0}
+                  </Text>
+                </Group>
+                <Text fw={500} mb="xs">
+                  Staff:
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Pharmacists: {selectedReport.staffPharmacists || 0}
+                  </Text>
+                  <Text>
+                    Technicians: {selectedReport.staffTechnicians || 0}
+                  </Text>
+                  <Text>Others: {selectedReport.staffOthers || 0}</Text>
+                  <Text>
+                    Local Suppliers: {selectedReport.localSuppliersCount || 0}
+                  </Text>
+                </Group>
+              </Paper>
+
+              {/* Challenges and Barriers */}
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Challenges and Barriers
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Regulatory Compliance Cost: ₦
+                    {selectedReport.regulatoryComplianceCost?.toLocaleString() ||
+                      0}
+                  </Text>
+                  <Text>
+                    Fake/Substandard Drugs:{' '}
+                    {selectedReport.fakeOrSubstandardDrugs || 0}
+                  </Text>
+                  <Text>
+                    Rejected Insurance Claims:{' '}
+                    {selectedReport.rejectedInsuranceClaims || 0}
+                  </Text>
+                </Group>
+                <Group mb="md">
+                  <Text>
+                    Access to Subsidized Medicines:{' '}
+                    {selectedReport.hasSubsidizedMedicines ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Insurance Inclusion Issues:{' '}
+                    {selectedReport.insuranceInclusionIssues ? 'Yes' : 'No'}
+                  </Text>
+                </Group>
+              </Paper>
+
+              {/* Public Health Partnerships */}
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Public Health Partnerships
+                </Text>
+                <Text>
+                  {selectedReport.publicHealthPartnerships?.length
+                    ? selectedReport.publicHealthPartnerships.join(', ')
+                    : 'No partnerships reported'}
+                </Text>
+              </Paper>
+
+              {/* Technology and Digital Adoption */}
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Technology and Digital Adoption
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Electronic Records:{' '}
+                    {selectedReport.usesElectronicRecords ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Mobile Health:{' '}
+                    {selectedReport.usesMobileHealth ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    Inventory Management:{' '}
+                    {selectedReport.usesInventoryManagement ? 'Yes' : 'No'}
+                  </Text>
+                </Group>
+              </Paper>
+
+              {/* Community Feedback */}
+              <Paper withBorder p="md" mb="md">
+                <Text fw={700} size="lg" mb="md">
+                  Community Feedback
+                </Text>
+                <Group mb="md">
+                  <Text>
+                    Patient Satisfaction Score:{' '}
+                    {selectedReport.patientSatisfactionScore || 'N/A'}/10
+                  </Text>
+                  <Text>
+                    Time Saved vs Hospital:{' '}
+                    {selectedReport.timeComparedToHospital || 0} minutes
                   </Text>
                 </Group>
               </Paper>

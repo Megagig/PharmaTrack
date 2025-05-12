@@ -198,10 +198,138 @@ export function DashboardCharts({ pharmacyId }: DashboardChartsProps) {
     return ailmentsArray;
   };
 
+  // Prepare data for service delivery chart
+  const prepareServiceDeliveryData = () => {
+    if (reports.length === 0) return [];
+
+    // Calculate totals
+    const totalPrescriptions = reports.reduce(
+      (sum, report) => sum + (report.prescriptionsFilled || 0),
+      0
+    );
+    const totalOTC = reports.reduce(
+      (sum, report) => sum + (report.otcConsultations || 0),
+      0
+    );
+    const totalMTM = reports.reduce(
+      (sum, report) => sum + (report.mtmInterventions || 0),
+      0
+    );
+
+    return [
+      { name: 'Prescriptions', value: totalPrescriptions },
+      { name: 'OTC Consultations', value: totalOTC },
+      { name: 'MTM Interventions', value: totalMTM },
+    ];
+  };
+
+  // Prepare data for technology adoption chart
+  const prepareTechnologyAdoptionData = () => {
+    if (reports.length === 0) return [];
+
+    const totalReports = reports.length;
+    const electronicRecords = reports.filter(
+      (r) => r.usesElectronicRecords
+    ).length;
+    const mobileHealth = reports.filter((r) => r.usesMobileHealth).length;
+    const inventoryManagement = reports.filter(
+      (r) => r.usesInventoryManagement
+    ).length;
+
+    return [
+      {
+        name: 'Electronic Records',
+        value:
+          totalReports > 0
+            ? Math.round((electronicRecords / totalReports) * 100)
+            : 0,
+      },
+      {
+        name: 'Mobile Health',
+        value:
+          totalReports > 0
+            ? Math.round((mobileHealth / totalReports) * 100)
+            : 0,
+      },
+      {
+        name: 'Inventory Management',
+        value:
+          totalReports > 0
+            ? Math.round((inventoryManagement / totalReports) * 100)
+            : 0,
+      },
+    ];
+  };
+
+  // Prepare data for economic impact chart
+  const prepareEconomicImpactData = () => {
+    if (reports.length === 0) return [];
+
+    // Calculate monthly averages
+    const totalRevenue = reports.reduce(
+      (sum, report) => sum + (report.monthlyRevenue || 0),
+      0
+    );
+    const totalTaxes = reports.reduce(
+      (sum, report) => sum + (report.taxesPaid || 0),
+      0
+    );
+    const totalStaff = reports.reduce(
+      (sum, report) =>
+        sum +
+        (report.staffPharmacists || 0) +
+        (report.staffTechnicians || 0) +
+        (report.staffOthers || 0),
+      0
+    );
+
+    // Group by month
+    const monthlyData: Record<
+      string,
+      { revenue: number; taxes: number; staff: number; count: number }
+    > = {};
+
+    reports.forEach((report) => {
+      const month = new Date(report.reportDate).toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      });
+
+      if (!monthlyData[month]) {
+        monthlyData[month] = { revenue: 0, taxes: 0, staff: 0, count: 0 };
+      }
+
+      monthlyData[month].revenue += report.monthlyRevenue || 0;
+      monthlyData[month].taxes += report.taxesPaid || 0;
+      monthlyData[month].staff +=
+        (report.staffPharmacists || 0) +
+        (report.staffTechnicians || 0) +
+        (report.staffOthers || 0);
+      monthlyData[month].count += 1;
+    });
+
+    // Convert to array and calculate averages
+    return Object.entries(monthlyData)
+      .map(([month, data]) => ({
+        month,
+        avgRevenue: data.count > 0 ? Math.round(data.revenue / data.count) : 0,
+        avgTaxes: data.count > 0 ? Math.round(data.taxes / data.count) : 0,
+        avgStaff: data.count > 0 ? Math.round(data.staff / data.count) : 0,
+      }))
+      .sort((a, b) => {
+        const dateA = new Date(a.month);
+        const dateB = new Date(b.month);
+        return dateA.getTime() - dateB.getTime();
+      });
+  };
+
   const demographicsData = prepareDemographicsData();
   const patientsTimeData = preparePatientsTimeData();
   const topMedicationsData = prepareTopMedicationsData();
   const ailmentsData = prepareAilmentsData();
+  const serviceDeliveryData = prepareServiceDeliveryData();
+  const technologyAdoptionData = prepareTechnologyAdoptionData();
+  const economicImpactData = prepareEconomicImpactData();
 
   return (
     <div>
@@ -329,6 +457,95 @@ export function DashboardCharts({ pharmacyId }: DashboardChartsProps) {
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="count" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Paper>
+
+          {/* Service Delivery Chart */}
+          <Paper
+            withBorder
+            p="md"
+            style={{ position: 'relative', height: 300 }}
+          >
+            <LoadingOverlay visible={loading} />
+            <Text fw={700} size="lg" mb="md">
+              Service Delivery
+            </Text>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={serviceDeliveryData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {serviceDeliveryData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </Paper>
+
+          {/* Technology Adoption Chart */}
+          <Paper
+            withBorder
+            p="md"
+            style={{ position: 'relative', height: 300 }}
+          >
+            <LoadingOverlay visible={loading} />
+            <Text fw={700} size="lg" mb="md">
+              Technology Adoption (%)
+            </Text>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={technologyAdoptionData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" domain={[0, 100]} />
+                <YAxis dataKey="name" type="category" width={120} />
+                <Tooltip formatter={(value) => `${value}%`} />
+                <Legend />
+                <Bar dataKey="value" fill="#FF8042" name="Adoption Rate (%)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Paper>
+
+          {/* Economic Impact Chart */}
+          <Paper
+            withBorder
+            p="md"
+            style={{ position: 'relative', height: 300 }}
+          >
+            <LoadingOverlay visible={loading} />
+            <Text fw={700} size="lg" mb="md">
+              Economic Impact
+            </Text>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={economicImpactData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar
+                  dataKey="avgRevenue"
+                  fill="#8884d8"
+                  name="Avg. Revenue (₦)"
+                />
+                <Bar dataKey="avgTaxes" fill="#82ca9d" name="Avg. Taxes (₦)" />
+                <Bar
+                  dataKey="avgStaff"
+                  fill="#ffc658"
+                  name="Avg. Staff Count"
+                />
               </BarChart>
             </ResponsiveContainer>
           </Paper>
