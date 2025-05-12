@@ -267,12 +267,7 @@ export function DashboardCharts({ pharmacyId }: DashboardChartsProps) {
 
     // We're using a simplified calculation for now
     // Will implement more detailed metrics in future versions
-    const staffCount = reports.reduce(
-      (sum, report) =>
-        sum +
-        (report.staffOthers || 0),
-      0
-    );
+    // Staff count calculation will be implemented in a future update
 
     // Group by month
     const monthlyData: Record<
@@ -389,9 +384,10 @@ export function DashboardCharts({ pharmacyId }: DashboardChartsProps) {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }
+                  label={({ name, percent }) => {
+                    const percentage = Math.round(percent * 100);
+                    return `${name}: ${percentage}%`;
+                  }}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"

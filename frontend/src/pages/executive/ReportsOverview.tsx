@@ -123,10 +123,10 @@ export function ReportsOverview() {
     }
   });
 
-  const avgReportsPerPharmacy =
-    uniquePharmacies.size > 0
-      ? (totalReports / uniquePharmacies.size).toFixed(1)
-      : '0';
+  const avgReportsPerPharmacy = 
+    uniquePharmacies.size > 0 
+      ? Math.round((totalReports / uniquePharmacies.size) * 10) / 10 // Round to 1 decimal place
+      : 0;
 
   // Get months for filter
   const getMonths = () => {

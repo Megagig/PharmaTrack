@@ -7,37 +7,37 @@ import {
   Table, 
   ActionIcon, 
   Menu, 
-  Card, 
   Text, 
   Loader, 
   Pagination, 
   Select, 
   Badge, 
   Tabs, 
-  Modal, 
-  Grid, 
-  NumberInput, 
-  Textarea, 
-  Alert
+  Modal,
+  Grid,
+  NumberInput,
+  Textarea,
+  Alert,
+  Container,
+  Card
 } from '@mantine/core';
 import { 
   IconPlus, 
   IconSearch, 
   IconDotsVertical, 
   IconEdit, 
+
   IconTrash, 
+  IconAlertTriangle, 
+  IconCheck,
   IconFilter,
   IconPackage,
-  IconAlertTriangle,
-  IconCheck,
-  IconX,
-  IconArrowsSort,
-  IconSortAscending,
-  IconSortDescending,
-  IconRefresh
+  IconSortAscending, 
+  IconSortDescending, 
+  IconRefresh 
 } from '@tabler/icons-react';
-import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
+import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import axios from 'axios';
 import { API_URL } from '../../../config';
@@ -62,6 +62,10 @@ interface Product {
   barcode?: string;
 }
 
+type FormValues = Omit<Product, 'id'> & {
+  id?: string;
+};
+
 export function ProductsPage() {
   const { token } = useAuthStore();
   const [products, setProducts] = useState<Product[]>([]);
@@ -80,12 +84,14 @@ export function ProductsPage() {
   const [opened, { open, close }] = useDisclosure(false);
   const [editMode, setEditMode] = useState(false);
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
-  const [deleteModalOpened, setDeleteModalOpened] = useState(false);
+  const [deleteModalOpened, { open: openDeleteModal, close: closeDeleteModal }] = useDisclosure(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  // Remove unused state
+  // const [activeFilter, setActiveFilter] = useState('all');
   
   const ITEMS_PER_PAGE = 10;
 
-  const form = useForm({
+  const form = useForm<FormValues>({
     initialValues: {
       name: '',
       sku: '',
@@ -103,12 +109,12 @@ export function ProductsPage() {
       expiryDate: ''
     },
     validate: {
-      name: (value) => (value.trim().length > 0 ? null : 'Name is required'),
-      sku: (value) => (value.trim().length > 0 ? null : 'SKU is required'),
-      category: (value) => (value.trim().length > 0 ? null : 'Category is required'),
-      costPrice: (value) => (value > 0 ? null : 'Cost price must be greater than 0'),
-      retailPrice: (value) => (value > 0 ? null : 'Retail price must be greater than 0'),
-      reorderLevel: (value) => (value >= 0 ? null : 'Reorder level must be non-negative'),
+      name: (value: string) => (value.trim().length > 0 ? null : 'Name is required'),
+      sku: (value: string) => (value.trim().length > 0 ? null : 'SKU is required'),
+      category: (value: string) => (value.trim().length > 0 ? null : 'Category is required'),
+      costPrice: (value: number) => (value > 0 ? null : 'Cost price must be greater than 0'),
+      retailPrice: (value: number) => (value > 0 ? null : 'Retail price must be greater than 0'),
+      reorderLevel: (value: number) => (value >= 0 ? null : 'Reorder level must be non-negative'),
     },
   });
 
@@ -232,7 +238,48 @@ export function ProductsPage() {
     }
   };
 
-  const handleCreateProduct = async (values: typeof form.values) => {
+  const handleCreateProduct = async (values: FormValues) => {
+    try {
+      if (editMode && currentProductId) {
+        await axios.patch(`${API_URL}/products/${currentProductId}`, values, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        notifications.show({
+          title: 'Success',
+          message: 'Product updated successfully',
+          color: 'teal',
+        });
+      } else {
+        await axios.post(
+          `${API_URL}/products`,
+          values,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        notifications.show({
+          title: 'Success',
+          message: 'Product created successfully',
+          color: 'teal',
+        });
+      }
+      close();
+      fetchProducts();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to save product. Please try again.',
+        color: 'red',
+      });
+    }
+  };
+
+  const handleUpdateProduct = async (values: FormValues) => {
     try {
       if (editMode && currentProductId) {
         await axios.patch(`${API_URL}/products/${currentProductId}`, values, {
@@ -265,7 +312,6 @@ export function ProductsPage() {
       notifications.show({
         title: 'Error',
         message: 'Failed to save product. Please try again.',
-        color: 'red',
       });
     }
   };
@@ -274,30 +320,31 @@ export function ProductsPage() {
     setEditMode(true);
     setCurrentProductId(product.id);
     form.setValues({
-      name: product.name,
-      sku: product.sku,
+      ...product,
       description: product.description || '',
-      category: product.category,
       dosageForm: product.dosageForm || '',
       strength: product.strength || '',
-      costPrice: product.costPrice,
-      wholesalePrice: product.wholesalePrice,
-      retailPrice: product.retailPrice,
-      reorderLevel: product.reorderLevel,
-      currentStock: product.currentStock,
+      expiryDate: product.expiryDate || '',
       manufacturer: product.manufacturer || '',
       barcode: product.barcode || '',
-      expiryDate: product.expiryDate || '',
     });
     open();
   };
 
-  const handleOpenCreateModal = () => {
-    setEditMode(false);
-    setCurrentProductId(null);
-    form.reset();
-    open();
-  };
+  // Remove unused function
+  // const handleFilterChange = (value: string | null) => {
+  //   if (value) {
+  //     setActiveFilter(value);
+  //   }
+  // };
+
+  // Remove unused function
+  // const handleOpenCreateModal = () => {
+  //   setEditMode(false);
+  //   setCurrentProductId(null);
+  //   form.reset();
+  //   open();
+  // };
 
   const handleDeleteProduct = async () => {
     if (!productToDelete) return;
@@ -313,7 +360,7 @@ export function ProductsPage() {
         message: 'Product deleted successfully',
         color: 'teal',
       });
-      setDeleteModalOpened(false);
+      closeDeleteModal();
       fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -325,17 +372,13 @@ export function ProductsPage() {
     }
   };
 
-  const openDeleteModal = (id: string) => {
-    setProductToDelete(id);
-    setDeleteModalOpened(true);
-  };
-
-  const resetFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory(null);
-    setSortField('name');
-    setSortDirection('asc');
-  };
+  // Remove unused function
+  // const resetFilters = () => {
+  //   setSearchQuery('');
+  //   setSelectedCategory(null);
+  //   setSortField('name');
+  //   setSortDirection('asc');
+  // };
 
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -357,8 +400,7 @@ export function ProductsPage() {
       <Title order={2} mb="md">
         Product Management
       </Title>
-
-      <Tabs defaultValue="all">
+      <Tabs>
         <Tabs.List mb="md">
           <Tabs.Tab value="all" leftSection={<IconPackage size={16} />}>
             All Products
@@ -408,14 +450,20 @@ export function ProductsPage() {
                 <Button 
                   variant="subtle" 
                   leftSection={<IconRefresh size={16} />}
-                  onClick={resetFilters}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory(null);
+                  }}
                 >
                   Reset
                 </Button>
               </Group>
               <Button 
                 leftSection={<IconPlus size={16} />} 
-                onClick={handleOpenCreateModal}
+                onClick={() => {
+                  setEditMode(false);
+                  open();
+                }}
               >
                 Add Product
               </Button>
@@ -504,7 +552,10 @@ export function ProductsPage() {
                               <Menu.Item 
                                 leftSection={<IconTrash size={16} />}
                                 color="red"
-                                onClick={() => openDeleteModal(product.id)}
+                                onClick={() => {
+                                  setProductToDelete(product.id);
+                                  openDeleteModal();
+                                }}
                               >
                                 Delete
                               </Menu.Item>
@@ -745,13 +796,13 @@ export function ProductsPage() {
       {/* Delete Confirmation Modal */}
       <Modal
         opened={deleteModalOpened}
-        onClose={() => setDeleteModalOpened(false)}
+        onClose={closeDeleteModal}
         title="Confirm Deletion"
         size="sm"
       >
         <Text mb="md">Are you sure you want to delete this product? This action cannot be undone.</Text>
         <Group justify="flex-end">
-          <Button variant="light" onClick={() => setDeleteModalOpened(false)}>
+          <Button variant="light" onClick={closeDeleteModal}>
             Cancel
           </Button>
           <Button color="red" onClick={handleDeleteProduct}>
