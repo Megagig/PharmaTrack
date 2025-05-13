@@ -12,7 +12,7 @@ import {
   Paper,
   useMantineTheme,
   Button,
-  Loader
+  Loader,
 } from '@mantine/core';
 import {
   IconPackage,
@@ -23,7 +23,7 @@ import {
   IconArrowUpRight,
   IconArrowDownRight,
   IconCash,
-  IconCalendarStats
+  IconCalendarStats,
 } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -89,15 +89,16 @@ export function InventoryDashboard() {
     salesThisMonth: 0,
     inventoryValue: 0,
     topSellingProducts: [],
-    recentTransactions: []
+    recentTransactions: [],
   };
 
   const data = summary || fallbackSummary;
 
   // Calculate percentage of low stock products
-  const lowStockPercentage = data.totalProducts > 0 
-    ? Math.round((data.lowStockProducts / data.totalProducts) * 100) 
-    : 0;
+  const lowStockPercentage =
+    data.totalProducts > 0
+      ? Math.round((data.lowStockProducts / data.totalProducts) * 100)
+      : 0;
 
   return (
     <Container size="xl" px="xs">
@@ -106,7 +107,9 @@ export function InventoryDashboard() {
       </Title>
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
+        <div
+          style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}
+        >
           <Loader size="lg" />
         </div>
       ) : (
@@ -116,17 +119,21 @@ export function InventoryDashboard() {
             <Card shadow="sm" p="lg" radius="md" withBorder>
               <Group justify="space-between">
                 <div>
-                  <Text size="xs" c="dimmed">Total Products</Text>
-                  <Text fw={700} size="xl">{data.totalProducts}</Text>
+                  <Text size="xs" c="dimmed">
+                    Total Products
+                  </Text>
+                  <Text fw={700} size="xl">
+                    {data.totalProducts}
+                  </Text>
                 </div>
                 <IconPackage size={30} color={theme.colors.blue[6]} />
               </Group>
-              <Button 
-                variant="light" 
-                color="blue" 
-                fullWidth 
-                mt="md" 
-                component={Link} 
+              <Button
+                variant="light"
+                color="blue"
+                fullWidth
+                mt="md"
+                component={Link}
                 to="/pharmacy/inventory/products"
               >
                 View Products
@@ -136,22 +143,29 @@ export function InventoryDashboard() {
             <Card shadow="sm" p="lg" radius="md" withBorder>
               <Group justify="space-between">
                 <div>
-                  <Text size="xs" c="dimmed">Low Stock Items</Text>
+                  <Text size="xs" c="dimmed">
+                    Low Stock Items
+                  </Text>
                   <Group align="flex-end" gap="xs">
-                    <Text fw={700} size="xl">{data.lowStockProducts}</Text>
-                    <Badge color={data.lowStockProducts > 0 ? "orange" : "green"} size="sm">
+                    <Text fw={700} size="xl">
+                      {data.lowStockProducts}
+                    </Text>
+                    <Badge
+                      color={data.lowStockProducts > 0 ? 'orange' : 'green'}
+                      size="sm"
+                    >
                       {lowStockPercentage}%
                     </Badge>
                   </Group>
                 </div>
                 <IconAlertTriangle size={30} color={theme.colors.orange[6]} />
               </Group>
-              <Button 
-                variant="light" 
-                color="orange" 
-                fullWidth 
-                mt="md" 
-                component={Link} 
+              <Button
+                variant="light"
+                color="orange"
+                fullWidth
+                mt="md"
+                component={Link}
                 to="/pharmacy/inventory/products?tab=low-stock"
               >
                 Check Low Stock
@@ -161,17 +175,21 @@ export function InventoryDashboard() {
             <Card shadow="sm" p="lg" radius="md" withBorder>
               <Group justify="space-between">
                 <div>
-                  <Text size="xs" c="dimmed">Suppliers</Text>
-                  <Text fw={700} size="xl">{data.totalSuppliers}</Text>
+                  <Text size="xs" c="dimmed">
+                    Suppliers
+                  </Text>
+                  <Text fw={700} size="xl">
+                    {data.totalSuppliers}
+                  </Text>
                 </div>
                 <IconUsers size={30} color={theme.colors.indigo[6]} />
               </Group>
-              <Button 
-                variant="light" 
-                color="indigo" 
-                fullWidth 
-                mt="md" 
-                component={Link} 
+              <Button
+                variant="light"
+                color="indigo"
+                fullWidth
+                mt="md"
+                component={Link}
                 to="/pharmacy/inventory/suppliers"
               >
                 Manage Suppliers
@@ -181,17 +199,21 @@ export function InventoryDashboard() {
             <Card shadow="sm" p="lg" radius="md" withBorder>
               <Group justify="space-between">
                 <div>
-                  <Text size="xs" c="dimmed">Inventory Value</Text>
-                  <Text fw={700} size="xl">${data.inventoryValue.toLocaleString()}</Text>
+                  <Text size="xs" c="dimmed">
+                    Inventory Value
+                  </Text>
+                  <Text fw={700} size="xl">
+                    ${data.inventoryValue.toLocaleString()}
+                  </Text>
                 </div>
                 <IconCash size={30} color={theme.colors.green[6]} />
               </Group>
-              <Button 
-                variant="light" 
-                color="green" 
-                fullWidth 
-                mt="md" 
-                component={Link} 
+              <Button
+                variant="light"
+                color="green"
+                fullWidth
+                mt="md"
+                component={Link}
                 to="/pharmacy/inventory/products"
               >
                 View Inventory
@@ -203,26 +225,38 @@ export function InventoryDashboard() {
           <Grid mb="md">
             <Grid.Col span={{ base: 12, md: 8 }}>
               <Card shadow="sm" p="lg" radius="md" withBorder>
-                <Title order={4} mb="md">Monthly Activity</Title>
+                <Title order={4} mb="md">
+                  Monthly Activity
+                </Title>
                 <Grid>
                   <Grid.Col span={6}>
                     <Paper p="md" radius="md" withBorder>
                       <Group>
-                        <IconTruckDelivery size={30} color={theme.colors.blue[6]} />
+                        <IconTruckDelivery
+                          size={30}
+                          color={theme.colors.blue[6]}
+                        />
                         <div>
-                          <Text size="xs" c="dimmed">Purchases This Month</Text>
+                          <Text size="xs" c="dimmed">
+                            Purchases This Month
+                          </Text>
                           <Group align="center" gap="xs">
-                            <Text fw={700} size="xl">{data.purchasesThisMonth}</Text>
-                            <IconArrowUpRight size={20} color={theme.colors.green[6]} />
+                            <Text fw={700} size="xl">
+                              {data.purchasesThisMonth}
+                            </Text>
+                            <IconArrowUpRight
+                              size={20}
+                              color={theme.colors.green[6]}
+                            />
                           </Group>
                         </div>
                       </Group>
-                      <Button 
-                        variant="subtle" 
-                        color="blue" 
-                        fullWidth 
-                        mt="md" 
-                        component={Link} 
+                      <Button
+                        variant="subtle"
+                        color="blue"
+                        fullWidth
+                        mt="md"
+                        component={Link}
                         to="/pharmacy/inventory/purchases"
                       >
                         View Purchases
@@ -232,21 +266,31 @@ export function InventoryDashboard() {
                   <Grid.Col span={6}>
                     <Paper p="md" radius="md" withBorder>
                       <Group>
-                        <IconShoppingCart size={30} color={theme.colors.teal[6]} />
+                        <IconShoppingCart
+                          size={30}
+                          color={theme.colors.teal[6]}
+                        />
                         <div>
-                          <Text size="xs" c="dimmed">Sales This Month</Text>
+                          <Text size="xs" c="dimmed">
+                            Sales This Month
+                          </Text>
                           <Group align="center" gap="xs">
-                            <Text fw={700} size="xl">{data.salesThisMonth}</Text>
-                            <IconArrowUpRight size={20} color={theme.colors.green[6]} />
+                            <Text fw={700} size="xl">
+                              {data.salesThisMonth}
+                            </Text>
+                            <IconArrowUpRight
+                              size={20}
+                              color={theme.colors.green[6]}
+                            />
                           </Group>
                         </div>
                       </Group>
-                      <Button 
-                        variant="subtle" 
-                        color="teal" 
-                        fullWidth 
-                        mt="md" 
-                        component={Link} 
+                      <Button
+                        variant="subtle"
+                        color="teal"
+                        fullWidth
+                        mt="md"
+                        component={Link}
                         to="/pharmacy/inventory/sales"
                       >
                         View Sales
@@ -255,9 +299,13 @@ export function InventoryDashboard() {
                   </Grid.Col>
                 </Grid>
 
-                <Title order={5} mt="xl" mb="sm">Recent Transactions</Title>
+                <Title order={5} mt="xl" mb="sm">
+                  Recent Transactions
+                </Title>
                 {data.recentTransactions.length === 0 ? (
-                  <Text c="dimmed" ta="center" py="md">No recent transactions</Text>
+                  <Text c="dimmed" ta="center" py="md">
+                    No recent transactions
+                  </Text>
                 ) : (
                   <div>
                     {data.recentTransactions.map((transaction) => (
@@ -265,18 +313,29 @@ export function InventoryDashboard() {
                         <Group justify="space-between">
                           <Group>
                             {transaction.type === 'PURCHASE' ? (
-                              <IconArrowDownRight size={20} color={theme.colors.red[6]} />
+                              <IconArrowDownRight
+                                size={20}
+                                color={theme.colors.red[6]}
+                              />
                             ) : (
-                              <IconArrowUpRight size={20} color={theme.colors.green[6]} />
+                              <IconArrowUpRight
+                                size={20}
+                                color={theme.colors.green[6]}
+                              />
                             )}
                             <div>
-                              <Text size="sm" fw={500}>{transaction.type}</Text>
-                              <Text size="xs" c="dimmed">{transaction.reference}</Text>
+                              <Text size="sm" fw={500}>
+                                {transaction.type}
+                              </Text>
+                              <Text size="xs" c="dimmed">
+                                {transaction.reference}
+                              </Text>
                             </div>
                           </Group>
                           <div>
                             <Text ta="right" fw={500}>
-                              {transaction.type === 'PURCHASE' ? '-' : '+'} {formatCurrency(transaction.amount)}
+                              {transaction.type === 'PURCHASE' ? '-' : '+'}{' '}
+                              {formatCurrency(transaction.amount)}
                             </Text>
                             <Text size="xs" c="dimmed" ta="right">
                               {new Date(transaction.date).toLocaleDateString()}
@@ -292,8 +351,16 @@ export function InventoryDashboard() {
 
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Card shadow="sm" p="lg" radius="md" withBorder h="100%">
-                <Title order={4} mb="md">Inventory Status</Title>
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                <Title order={4} mb="md">
+                  Inventory Status
+                </Title>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    marginBottom: '20px',
+                  }}
+                >
                   <RingProgress
                     size={180}
                     thickness={20}
@@ -304,8 +371,12 @@ export function InventoryDashboard() {
                     ]}
                     label={
                       <div style={{ textAlign: 'center' }}>
-                        <Text fw={700} size="xl">{lowStockPercentage}%</Text>
-                        <Text size="xs" c="dimmed">Low Stock</Text>
+                        <Text fw={700} size="xl">
+                          {lowStockPercentage}%
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          Low Stock
+                        </Text>
                       </div>
                     }
                   />
@@ -323,12 +394,12 @@ export function InventoryDashboard() {
                   </Badge>
                 </Group>
 
-                <Button 
+                <Button
                   leftSection={<IconCalendarStats size={16} />}
-                  variant="outline" 
-                  color="blue" 
-                  fullWidth 
-                  component={Link} 
+                  variant="outline"
+                  color="blue"
+                  fullWidth
+                  component={Link}
                   to="/pharmacy/inventory/products"
                 >
                   View Detailed Report
@@ -339,9 +410,13 @@ export function InventoryDashboard() {
 
           {/* Top Selling Products */}
           <Card shadow="sm" p="lg" radius="md" withBorder mb="md">
-            <Title order={4} mb="md">Top Selling Products</Title>
+            <Title order={4} mb="md">
+              Top Selling Products
+            </Title>
             {data.topSellingProducts.length === 0 ? (
-              <Text c="dimmed" ta="center" py="md">No sales data available</Text>
+              <Text c="dimmed" ta="center" py="md">
+                No sales data available
+              </Text>
             ) : (
               <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
                 {data.topSellingProducts.map((product) => (
@@ -349,7 +424,9 @@ export function InventoryDashboard() {
                     <Text fw={500}>{product.name}</Text>
                     <Group justify="space-between" mt="xs">
                       <Text size="sm">Quantity: {product.quantity}</Text>
-                      <Text size="sm" fw={500}>Revenue: {formatCurrency(product.revenue)}</Text>
+                      <Text size="sm" fw={500}>
+                        Revenue: {formatCurrency(product.revenue)}
+                      </Text>
                     </Group>
                   </Paper>
                 ))}
@@ -358,10 +435,10 @@ export function InventoryDashboard() {
           </Card>
 
           {/* Quick Actions */}
-          <SimpleGrid cols={{ base: 2, sm: 4 }} mb="md">
-            <Button 
+          <SimpleGrid cols={{ base: 2, sm: 5 }} mb="md">
+            <Button
               leftSection={<IconPackage size={16} />}
-              component={Link} 
+              component={Link}
               to="/pharmacy/inventory/products"
               variant="light"
               color="blue"
@@ -369,9 +446,19 @@ export function InventoryDashboard() {
             >
               Manage Products
             </Button>
-            <Button 
+            <Button
+              leftSection={<IconAlertTriangle size={16} />}
+              component={Link}
+              to="/pharmacy/inventory/stock"
+              variant="light"
+              color="yellow"
+              fullWidth
+            >
+              Stock Management
+            </Button>
+            <Button
               leftSection={<IconTruckDelivery size={16} />}
-              component={Link} 
+              component={Link}
               to="/pharmacy/inventory/purchases"
               variant="light"
               color="indigo"
@@ -379,9 +466,9 @@ export function InventoryDashboard() {
             >
               New Purchase
             </Button>
-            <Button 
+            <Button
               leftSection={<IconShoppingCart size={16} />}
-              component={Link} 
+              component={Link}
               to="/pharmacy/inventory/sales"
               variant="light"
               color="teal"
@@ -389,9 +476,9 @@ export function InventoryDashboard() {
             >
               New Sale
             </Button>
-            <Button 
+            <Button
               leftSection={<IconUsers size={16} />}
-              component={Link} 
+              component={Link}
               to="/pharmacy/inventory/suppliers"
               variant="light"
               color="grape"

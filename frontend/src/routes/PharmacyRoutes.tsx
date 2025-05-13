@@ -3,7 +3,6 @@ import { PharmacyLayout } from '../components/layout/PharmacyLayout';
 import { Dashboard } from '../pages/pharmacy/Dashboard';
 import { SubmitReport } from '../pages/pharmacy/SubmitReport';
 import { MyReports } from '../pages/pharmacy/MyReports';
-import { StockManagement } from '../pages/pharmacy/StockManagement';
 import { Profile } from '../pages/pharmacy/Profile';
 import { Support } from '../pages/pharmacy/Support';
 import { AuditLogs } from '../pages/common/AuditLogs';
@@ -15,6 +14,7 @@ import { ProductsPage } from '../pages/pharmacy/inventory/ProductsPage';
 import { SuppliersPage } from '../pages/pharmacy/inventory/SuppliersPage';
 import { PurchasesPage } from '../pages/pharmacy/inventory/PurchasesPage';
 import { SalesPage } from '../pages/pharmacy/inventory/SalesPage';
+import { StockManagement } from '../pages/pharmacy/inventory/StockManagement';
 
 const PharmacyRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -72,7 +72,7 @@ export const pharmacyRoutes: RouteObject[] = [
     ),
   },
   {
-    path: '/pharmacy/stock',
+    path: '/pharmacy/inventory/stock',
     element: (
       <PharmacyRoute>
         <PharmacyLayout>
