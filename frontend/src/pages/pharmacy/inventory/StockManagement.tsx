@@ -29,7 +29,11 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useAuthStore } from '../../../store/authStore';
-import { apiService } from '../../../services/apiService';
+import {
+  productService,
+  Product,
+  BatchItem,
+} from '../../../services/productService';
 import { notifications } from '@mantine/notifications';
 import {
   IconSearch,
@@ -51,31 +55,7 @@ import {
   IconShoppingCart,
 } from '@tabler/icons-react';
 
-// Define types
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  category: string;
-  currentStock: number;
-  reorderLevel: number;
-  costPrice: number;
-  retailPrice: number;
-  expiryDate?: Date | null;
-  description?: string;
-  dosageForm?: string;
-  strength?: string;
-  manufacturer?: string;
-}
-
-interface BatchItem {
-  id: string;
-  batchNumber: string;
-  expiryDate: Date;
-  initialQuantity: number;
-  currentQuantity: number;
-  productId: string;
-}
+// Using Product and BatchItem types imported from productService
 
 interface ProductFormData {
   name: string;
@@ -102,6 +82,7 @@ export function StockManagement() {
     null
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -168,36 +149,30 @@ export function StockManagement() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setError('');
 
-      // Check API availability first
-      const isApiAvailable = await apiService.checkApiAvailability();
+      // Use our new product service to fetch products
+      const productsData = await productService.getAllProducts();
 
-      if (!isApiAvailable) {
-        throw new Error('API is not available');
-      }
+      setProducts(productsData);
+      setFilteredProducts(productsData);
 
-      const data = await apiService.get('/products');
+      // Extract unique categories
+      const uniqueCategories = [
+        ...new Set(productsData.map((p) => p.category)),
+      ];
+      setCategories(uniqueCategories);
 
-      if (data && data.data && data.data.products) {
-        const productsData = data.data.products;
-        setProducts(productsData);
-        setFilteredProducts(productsData);
+      // Set low stock products
+      const lowStock = productsData.filter(
+        (p) => p.currentStock > 0 && p.currentStock <= p.reorderLevel
+      );
+      setLowStockProducts(lowStock);
 
-        // Extract unique categories
-        const uniqueCategories = [
-          ...new Set(productsData.map((p: Product) => p.category)),
-        ];
-        setCategories(uniqueCategories);
+      // Fetch expiring products
+      fetchExpiringProducts();
 
-        // Set low stock products
-        const lowStock = productsData.filter(
-          (p: Product) => p.currentStock > 0 && p.currentStock <= p.reorderLevel
-        );
-        setLowStockProducts(lowStock);
-
-        // Fetch expiring products
-        fetchExpiringProducts();
-
+      if (productsData.length > 0) {
         notifications.show({
           title: 'Success',
           message: `Loaded ${productsData.length} products successfully`,
@@ -206,30 +181,7 @@ export function StockManagement() {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      notifications.show({
-        title: 'Connection Issue',
-        message: 'Failed to fetch products. Using mock data for demonstration.',
-        color: 'yellow',
-      });
-
-      // Set mock data for demonstration
-      const mockData = getMockProducts();
-      setProducts(mockData);
-      setFilteredProducts(mockData);
-      setCategories([...new Set(mockData.map((p) => p.category))]);
-      setLowStockProducts(
-        mockData.filter(
-          (p) => p.currentStock > 0 && p.currentStock <= p.reorderLevel
-        )
-      );
-      setExpiringProducts(
-        mockData.filter(
-          (p) =>
-            p.expiryDate &&
-            new Date(p.expiryDate) <
-              new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-        )
-      );
+      setError('Failed to fetch products. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -238,23 +190,10 @@ export function StockManagement() {
   // Fetch expiring products
   const fetchExpiringProducts = async () => {
     try {
-      const data = await apiService.get('/products/expiring?days=90');
-
-      if (data && data.data && data.data.products) {
-        setExpiringProducts(data.data.products);
-      }
+      const expiringData = await productService.getExpiringProducts(90);
+      setExpiringProducts(expiringData);
     } catch (error) {
       console.error('Error fetching expiring products:', error);
-      // Set mock expiring products
-      const mockData = getMockProducts();
-      setExpiringProducts(
-        mockData.filter(
-          (p) =>
-            p.expiryDate &&
-            new Date(p.expiryDate) <
-              new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-        )
-      );
     }
   };
 
@@ -262,32 +201,10 @@ export function StockManagement() {
   const fetchBatchItems = async (productId: string) => {
     try {
       setLoadingBatches(true);
-      const data = await apiService.get(`/products/${productId}/batches`);
-
-      if (data && data.data && data.data.batchItems) {
-        setBatchItems(data.data.batchItems);
-      }
+      const batchData = await productService.getBatchItems(productId);
+      setBatchItems(batchData);
     } catch (error) {
       console.error('Error fetching batch items:', error);
-      // Set mock batch items
-      setBatchItems([
-        {
-          id: '1',
-          batchNumber: 'B001',
-          expiryDate: new Date('2024-06-15'),
-          initialQuantity: 100,
-          currentQuantity: 75,
-          productId,
-        },
-        {
-          id: '2',
-          batchNumber: 'B002',
-          expiryDate: new Date('2024-08-20'),
-          initialQuantity: 200,
-          currentQuantity: 175,
-          productId,
-        },
-      ]);
     } finally {
       setLoadingBatches(false);
     }
@@ -321,25 +238,26 @@ export function StockManagement() {
     try {
       if (!selectedProductId) return;
 
-      const data = await apiService.put(
-        `/products/${selectedProductId}`,
+      const updatedProduct = await productService.updateProduct(
+        selectedProductId,
         formData
       );
 
-      if (data && data.data && data.data.product) {
-        // Update products list
-        setProducts((prevProducts) =>
-          prevProducts.map((p) =>
-            p.id === selectedProductId ? data.data.product : p
-          )
-        );
+      // Update products list
+      setProducts((prevProducts) =>
+        prevProducts.map((p) =>
+          p.id === selectedProductId ? updatedProduct : p
+        )
+      );
 
-        notifications.show({
-          title: 'Success',
-          message: 'Product updated successfully',
-          color: 'green',
-        });
-      }
+      notifications.show({
+        title: 'Success',
+        message: 'Product updated successfully',
+        color: 'green',
+      });
+
+      setUpdateModalOpen(false);
+      setSelectedProductId(null);
     } catch (error) {
       console.error('Error updating product:', error);
       notifications.show({
@@ -347,35 +265,23 @@ export function StockManagement() {
         message: 'Failed to update product. Please try again.',
         color: 'red',
       });
-    } finally {
-      setUpdateModalOpen(false);
-      setSelectedProductId(null);
     }
   };
 
   // Handle add product
   const handleAddProduct = async () => {
     try {
-      const data = await apiService.post('/products', formData);
+      const newProduct = await productService.addProduct(formData as any);
 
-      if (data && data.data && data.data.product) {
-        // Add new product to list
-        setProducts((prevProducts) => [...prevProducts, data.data.product]);
+      // Add new product to list
+      setProducts((prevProducts) => [...prevProducts, newProduct]);
 
-        notifications.show({
-          title: 'Success',
-          message: 'Product added successfully',
-          color: 'green',
-        });
-      }
-    } catch (error) {
-      console.error('Error adding product:', error);
       notifications.show({
-        title: 'Error',
-        message: 'Failed to add product. Please try again.',
-        color: 'red',
+        title: 'Success',
+        message: 'Product added successfully',
+        color: 'green',
       });
-    } finally {
+
       setAddModalOpen(false);
       // Reset form data
       setFormData({
@@ -386,6 +292,13 @@ export function StockManagement() {
         wholesalePrice: 0,
         retailPrice: 0,
         reorderLevel: 10,
+      });
+    } catch (error) {
+      console.error('Error adding product:', error);
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to add product. Please try again.',
+        color: 'red',
       });
     }
   };
@@ -486,83 +399,7 @@ export function StockManagement() {
     fetchProducts();
   }, []);
 
-  // Mock data for demonstration
-  const getMockProducts = (): Product[] => {
-    return [
-      {
-        id: '1',
-        name: 'Paracetamol 500mg',
-        sku: 'PCM500',
-        category: 'Analgesic',
-        currentStock: 250,
-        reorderLevel: 50,
-        costPrice: 200,
-        retailPrice: 250,
-        expiryDate: new Date('2024-06-15'),
-        description: 'Pain reliever and fever reducer',
-        dosageForm: 'Tablet',
-        strength: '500mg',
-        manufacturer: 'GSK',
-      },
-      {
-        id: '2',
-        name: 'Amoxicillin 250mg',
-        sku: 'AMX250',
-        category: 'Antibiotic',
-        currentStock: 120,
-        reorderLevel: 30,
-        costPrice: 350,
-        retailPrice: 450,
-        expiryDate: new Date('2024-03-20'),
-        dosageForm: 'Capsule',
-        strength: '250mg',
-      },
-      {
-        id: '3',
-        name: 'Metformin 500mg',
-        sku: 'MET500',
-        category: 'Antidiabetic',
-        currentStock: 180,
-        reorderLevel: 40,
-        costPrice: 300,
-        retailPrice: 380,
-        expiryDate: new Date('2024-08-10'),
-      },
-      {
-        id: '4',
-        name: 'Lisinopril 10mg',
-        sku: 'LIS10',
-        category: 'Antihypertensive',
-        currentStock: 20,
-        reorderLevel: 25,
-        costPrice: 400,
-        retailPrice: 500,
-        expiryDate: new Date('2024-05-05'),
-      },
-      {
-        id: '5',
-        name: 'Salbutamol Inhaler',
-        sku: 'SAL100',
-        category: 'Bronchodilator',
-        currentStock: 15,
-        reorderLevel: 20,
-        costPrice: 1200,
-        retailPrice: 1500,
-        expiryDate: new Date('2024-07-22'),
-      },
-      {
-        id: '6',
-        name: 'Ciprofloxacin 500mg',
-        sku: 'CIP500',
-        category: 'Antibiotic',
-        currentStock: 0,
-        reorderLevel: 30,
-        costPrice: 450,
-        retailPrice: 550,
-        expiryDate: new Date('2024-04-18'),
-      },
-    ];
-  };
+  // We're now using the productService for mock data
   return (
     <Container size="xl" p="md">
       <Paper shadow="xs" p="md" withBorder>
@@ -728,12 +565,31 @@ export function StockManagement() {
           </Group>
         </Group>
 
+        {/* Error Message */}
+        {error && (
+          <Alert color="red" title="Error" mb="md">
+            {error}
+            <Button
+              variant="outline"
+              color="red"
+              size="xs"
+              mt="xs"
+              onClick={() => {
+                setError('');
+                fetchProducts();
+              }}
+            >
+              Retry
+            </Button>
+          </Alert>
+        )}
+
         {/* Products Table */}
         {loading ? (
           <Box py="xl" style={{ display: 'flex', justifyContent: 'center' }}>
             <Loader size="lg" />
           </Box>
-        ) : filteredProducts.length === 0 ? (
+        ) : filteredProducts.length === 0 && !error ? (
           <Alert color="blue" title="No products found">
             {searchQuery
               ? `No products match your search criteria "${searchQuery}".`
@@ -741,7 +597,7 @@ export function StockManagement() {
               ? `No products in the ${activeTab} category.`
               : 'No products in inventory. Add some products to get started.'}
           </Alert>
-        ) : (
+        ) : !error ? (
           <Table striped highlightOnHover>
             <thead>
               <tr>
@@ -895,7 +751,7 @@ export function StockManagement() {
               ))}
             </tbody>
           </Table>
-        )}
+        ) : null}
       </Paper>
 
       {/* Add Product Modal */}

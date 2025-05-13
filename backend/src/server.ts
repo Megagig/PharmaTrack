@@ -10,6 +10,7 @@ import pharmacyRoutes from './routes/pharmacy.routes';
 import reportRoutes from './routes/report.routes';
 import fdaRoutes from './routes/fda.routes';
 import healthRoutes from './routes/health.routes';
+import productRoutes from './routes/product.routes';
 
 // Load environment variables
 dotenv.config();
@@ -105,6 +106,7 @@ app.use('/api/pharmacies', pharmacyRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/fda', fdaRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/products', productRoutes);
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: any): void => {

@@ -24,6 +24,7 @@ const pharmacy_routes_1 = __importDefault(require("./routes/pharmacy.routes"));
 const report_routes_1 = __importDefault(require("./routes/report.routes"));
 const fda_routes_1 = __importDefault(require("./routes/fda.routes"));
 const health_routes_1 = __importDefault(require("./routes/health.routes"));
+const product_routes_1 = __importDefault(require("./routes/product.routes"));
 // Load environment variables
 dotenv_1.default.config();
 // Initialize Express app
@@ -106,6 +107,7 @@ app.use('/api/pharmacies', pharmacy_routes_1.default);
 app.use('/api/reports', report_routes_1.default);
 app.use('/api/fda', fda_routes_1.default);
 app.use('/api/health', health_routes_1.default);
+app.use('/api/products', product_routes_1.default);
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
