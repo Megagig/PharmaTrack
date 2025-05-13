@@ -135,18 +135,25 @@ model Product {
 }
 
 model Supplier {
-  id          String     @id @default(uuid())
-  name        String
-  contactName String?
-  email       String?
-  phone       String
-  address     String?
-  notes       String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  pharmacyId  String
-  pharmacy    Pharmacy   @relation(fields: [pharmacyId], references: [id])
-  purchases   Purchase[]
+  id           String     @id @default(uuid())
+  name         String
+  contactName  String?
+  email        String?
+  phone        String
+  address      String?
+  city         String?
+  state        String?
+  zipCode      String?
+  country      String?
+  taxId        String?
+  paymentTerms String?
+  notes        String?
+  status       String     @default("ACTIVE")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  pharmacyId   String
+  pharmacy     Pharmacy   @relation(fields: [pharmacyId], references: [id])
+  purchases    Purchase[]
 
   @@map("suppliers")
 }

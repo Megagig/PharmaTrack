@@ -11,6 +11,11 @@ import reportRoutes from './routes/report.routes';
 import fdaRoutes from './routes/fda.routes';
 import healthRoutes from './routes/health.routes';
 import productRoutes from './routes/product.routes';
+import supplierRoutes from './routes/supplier.routes';
+import saleRoutes from './routes/sale.routes';
+import purchaseRoutes from './routes/purchase.routes';
+import transactionRoutes from './routes/transaction.routes';
+import inventoryReportRoutes from './routes/inventory-report.routes';
 
 // Load environment variables
 dotenv.config();
@@ -107,6 +112,11 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/fda', fdaRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/sales', saleRoutes);
+app.use('/api/purchases', purchaseRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/inventory-reports', inventoryReportRoutes);
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: any): void => {

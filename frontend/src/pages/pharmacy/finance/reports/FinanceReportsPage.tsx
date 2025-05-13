@@ -217,21 +217,30 @@ const FinanceReportsPage = () => {
                   weekend: { color: 'var(--mantine-color-red-6)' },
                   calendarHeaderControl: {
                     borderRadius: 4,
-                    '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
+                    '&:hover': {
+                      backgroundColor: 'var(--mantine-color-blue-0)',
+                    },
                   },
                   monthPickerControl: {
                     borderRadius: 4,
-                    '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
+                    '&:hover': {
+                      backgroundColor: 'var(--mantine-color-blue-0)',
+                    },
                   },
                   yearPickerControl: {
                     borderRadius: 4,
-                    '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
+                    '&:hover': {
+                      backgroundColor: 'var(--mantine-color-blue-0)',
+                    },
                   },
                 }}
               />
             ) : (
               <Text>
-                <IconCalendar size={16} style={{ verticalAlign: 'middle', marginRight: 5 }} />
+                <IconCalendar
+                  size={16}
+                  style={{ verticalAlign: 'middle', marginRight: 5 }}
+                />
                 {dateRange[0] && dateRange[1]
                   ? `${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`
                   : 'Select date range'}
@@ -252,7 +261,7 @@ const FinanceReportsPage = () => {
               style={{ width: 200 }}
             />
           </Group>
-        </Group>
+        </Stack>
 
         {/* Error Message */}
         {error && (
