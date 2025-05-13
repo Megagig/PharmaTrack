@@ -16,6 +16,13 @@ import { PurchasesPage } from '../pages/pharmacy/inventory/PurchasesPage';
 import { SalesPage } from '../pages/pharmacy/inventory/SalesPage';
 import { StockManagement } from '../pages/pharmacy/inventory/StockManagement';
 
+// Finance Module Pages
+import TransactionsPage from '../pages/pharmacy/finance/transactions/TransactionsPage';
+import FinanceReportsPage from '../pages/pharmacy/finance/reports/FinanceReportsPage';
+
+// Analytics Module Pages
+import AnalyticsPage from '../pages/pharmacy/analytics/AnalyticsPage';
+
 const PharmacyRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useAuthStore();
 
@@ -158,6 +165,38 @@ export const pharmacyRoutes: RouteObject[] = [
       <PharmacyRoute>
         <PharmacyLayout>
           <SalesPage />
+        </PharmacyLayout>
+      </PharmacyRoute>
+    ),
+  },
+  // Finance Module Routes
+  {
+    path: '/pharmacy/finance/transactions',
+    element: (
+      <PharmacyRoute>
+        <PharmacyLayout>
+          <TransactionsPage />
+        </PharmacyLayout>
+      </PharmacyRoute>
+    ),
+  },
+  {
+    path: '/pharmacy/finance/reports',
+    element: (
+      <PharmacyRoute>
+        <PharmacyLayout>
+          <FinanceReportsPage />
+        </PharmacyLayout>
+      </PharmacyRoute>
+    ),
+  },
+  // Analytics Module Routes
+  {
+    path: '/pharmacy/analytics',
+    element: (
+      <PharmacyRoute>
+        <PharmacyLayout>
+          <AnalyticsPage />
         </PharmacyLayout>
       </PharmacyRoute>
     ),
