@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useAuthStore } from '../store/authStore';
+import { apiService } from './apiService';
 
 // Create axios instance with base URL
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -11,6 +12,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: false, // Disable sending cookies with requests
+  timeout: 10000, // 10 seconds timeout
 });
 
 // Add request interceptor to add auth token to requests
@@ -86,3 +88,6 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+// Export the more robust API service for new code
+export { apiService };

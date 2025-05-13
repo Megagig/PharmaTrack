@@ -29,7 +29,7 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useAuthStore } from '../../../store/authStore';
-import axios from 'axios';
+import { apiService } from '../../../services/apiService';
 import { notifications } from '@mantine/notifications';
 import {
   IconSearch,
@@ -168,37 +168,46 @@ export function StockManagement() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/products`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
-      if (response.data && response.data.data && response.data.data.products) {
-        setProducts(response.data.data.products);
-        setFilteredProducts(response.data.data.products);
+      // Check API availability first
+      const isApiAvailable = await apiService.checkApiAvailability();
+
+      if (!isApiAvailable) {
+        throw new Error('API is not available');
+      }
+
+      const data = await apiService.get('/products');
+
+      if (data && data.data && data.data.products) {
+        const productsData = data.data.products;
+        setProducts(productsData);
+        setFilteredProducts(productsData);
 
         // Extract unique categories
         const uniqueCategories = [
-          ...new Set(
-            response.data.data.products.map((p: Product) => p.category)
-          ),
+          ...new Set(productsData.map((p: Product) => p.category)),
         ];
         setCategories(uniqueCategories);
 
         // Set low stock products
-        const lowStock = response.data.data.products.filter(
+        const lowStock = productsData.filter(
           (p: Product) => p.currentStock > 0 && p.currentStock <= p.reorderLevel
         );
         setLowStockProducts(lowStock);
 
         // Fetch expiring products
         fetchExpiringProducts();
+
+        notifications.show({
+          title: 'Success',
+          message: `Loaded ${productsData.length} products successfully`,
+          color: 'green',
+        });
       }
     } catch (error) {
       console.error('Error fetching products:', error);
       notifications.show({
-        title: 'Error',
+        title: 'Connection Issue',
         message: 'Failed to fetch products. Using mock data for demonstration.',
         color: 'yellow',
       });
@@ -229,14 +238,10 @@ export function StockManagement() {
   // Fetch expiring products
   const fetchExpiringProducts = async () => {
     try {
-      const response = await axios.get(`${API_URL}/products/expiring?days=90`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const data = await apiService.get('/products/expiring?days=90');
 
-      if (response.data && response.data.data && response.data.data.products) {
-        setExpiringProducts(response.data.data.products);
+      if (data && data.data && data.data.products) {
+        setExpiringProducts(data.data.products);
       }
     } catch (error) {
       console.error('Error fetching expiring products:', error);
@@ -257,21 +262,10 @@ export function StockManagement() {
   const fetchBatchItems = async (productId: string) => {
     try {
       setLoadingBatches(true);
-      const response = await axios.get(
-        `${API_URL}/products/${productId}/batches`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const data = await apiService.get(`/products/${productId}/batches`);
 
-      if (
-        response.data &&
-        response.data.data &&
-        response.data.data.batchItems
-      ) {
-        setBatchItems(response.data.data.batchItems);
+      if (data && data.data && data.data.batchItems) {
+        setBatchItems(data.data.batchItems);
       }
     } catch (error) {
       console.error('Error fetching batch items:', error);
@@ -327,21 +321,16 @@ export function StockManagement() {
     try {
       if (!selectedProductId) return;
 
-      const response = await axios.put(
-        `${API_URL}/products/${selectedProductId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const data = await apiService.put(
+        `/products/${selectedProductId}`,
+        formData
       );
 
-      if (response.data && response.data.data && response.data.data.product) {
+      if (data && data.data && data.data.product) {
         // Update products list
         setProducts((prevProducts) =>
           prevProducts.map((p) =>
-            p.id === selectedProductId ? response.data.data.product : p
+            p.id === selectedProductId ? data.data.product : p
           )
         );
 
@@ -367,18 +356,11 @@ export function StockManagement() {
   // Handle add product
   const handleAddProduct = async () => {
     try {
-      const response = await axios.post(`${API_URL}/products`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const data = await apiService.post('/products', formData);
 
-      if (response.data && response.data.data && response.data.data.product) {
+      if (data && data.data && data.data.product) {
         // Add new product to list
-        setProducts((prevProducts) => [
-          ...prevProducts,
-          response.data.data.product,
-        ]);
+        setProducts((prevProducts) => [...prevProducts, data.data.product]);
 
         notifications.show({
           title: 'Success',
