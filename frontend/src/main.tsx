@@ -1,24 +1,34 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
-import { MantineProvider, createTheme, localStorageColorSchemeManager } from '@mantine/core';
+import {
+  MantineProvider,
+  createTheme,
+  localStorageColorSchemeManager,
+  mergeMantineTheme,
+} from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 import './index.css';
 import { router } from './routes';
+import { datePickerTheme } from './theme/datePickerTheme';
 
 // Color scheme manager to persist user preference
-const colorSchemeManager = localStorageColorSchemeManager({ key: 'pharmatrack-color-scheme' });
+const colorSchemeManager = localStorageColorSchemeManager({
+  key: 'pharmatrack-color-scheme',
+});
 
-// Create a custom theme
-const theme = createTheme({
+// Create a base theme
+const baseTheme = createTheme({
   primaryColor: 'teal',
   primaryShade: 6,
   defaultRadius: 'md',
   fontFamily: 'Poppins, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
   headings: {
-    fontFamily: 'Poppins, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+    fontFamily:
+      'Poppins, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
     fontWeight: '600',
   },
   colors: {
@@ -110,9 +120,16 @@ const theme = createTheme({
   },
 });
 
+// Merge base theme with date picker theme
+const theme = mergeMantineTheme(baseTheme, datePickerTheme);
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider theme={theme} colorSchemeManager={colorSchemeManager} defaultColorScheme="light">
+    <MantineProvider
+      theme={theme}
+      colorSchemeManager={colorSchemeManager}
+      defaultColorScheme="light"
+    >
       <Notifications position="top-right" limit={5} />
       <RouterProvider router={router} />
     </MantineProvider>

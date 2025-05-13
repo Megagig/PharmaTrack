@@ -143,6 +143,30 @@ const FinanceReportsPage = () => {
             value={dateRange}
             onChange={setDateRange}
             style={{ flex: 1 }}
+            size="md"
+            radius="md"
+            clearable={false}
+            firstDayOfWeek={0}
+            styles={{
+              calendarHeader: { marginBottom: 10 },
+              monthCell: { padding: '5px 10px' },
+              yearCell: { padding: '5px 10px' },
+              day: { borderRadius: 4 },
+              weekday: { fontWeight: 600 },
+              weekend: { color: 'var(--mantine-color-red-6)' },
+              calendarHeaderControl: {
+                borderRadius: 4,
+                '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
+              },
+              monthPickerControl: {
+                borderRadius: 4,
+                '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
+              },
+              yearPickerControl: {
+                borderRadius: 4,
+                '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
+              },
+            }}
           />
           <Select
             label="Report Type"
