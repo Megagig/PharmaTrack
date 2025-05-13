@@ -45,7 +45,7 @@ import { useAuthStore } from '../../../store/authStore';
 interface Supplier {
   id: string;
   name: string;
-  contactPerson: string;
+  contactName: string;
   email: string;
   phone: string;
   address: string;
@@ -84,7 +84,7 @@ export function SuppliersPage() {
   const form = useForm({
     initialValues: {
       name: '',
-      contactPerson: '',
+      contactName: '',
       email: '',
       phone: '',
       address: '',
@@ -141,7 +141,7 @@ export function SuppliersPage() {
       filtered = filtered.filter(
         (supplier) =>
           supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          supplier.contactPerson.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          supplier.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           supplier.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
           supplier.phone.includes(searchQuery)
       );
@@ -225,7 +225,7 @@ export function SuppliersPage() {
     setCurrentSupplierId(supplier.id);
     form.setValues({
       name: supplier.name,
-      contactPerson: supplier.contactPerson,
+      contactName: supplier.contactName,
       email: supplier.email,
       phone: supplier.phone,
       address: supplier.address,
@@ -368,9 +368,9 @@ export function SuppliersPage() {
                         </Group>
                       </Table.Th>
                       <Table.Th>
-                        <Group gap={5} onClick={() => handleSort('contactPerson')} style={{ cursor: 'pointer' }}>
+                        <Group gap={5} onClick={() => handleSort('contactName')} style={{ cursor: 'pointer' }}>
                           Contact Person
-                          {sortField === 'contactPerson' && (
+                          {sortField === 'contactName' && (
                             sortDirection === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
                           )}
                         </Group>
@@ -392,7 +392,7 @@ export function SuppliersPage() {
                     {paginatedSuppliers.map((supplier) => (
                       <Table.Tr key={supplier.id}>
                         <Table.Td>{supplier.name}</Table.Td>
-                        <Table.Td>{supplier.contactPerson}</Table.Td>
+                        <Table.Td>{supplier.contactName}</Table.Td>
                         <Table.Td>{supplier.phone}</Table.Td>
                         <Table.Td>{supplier.email}</Table.Td>
                         <Table.Td>{`${supplier.city}, ${supplier.country}`}</Table.Td>
@@ -467,7 +467,7 @@ export function SuppliersPage() {
                     .map((supplier) => (
                       <Table.Tr key={supplier.id}>
                         <Table.Td>{supplier.name}</Table.Td>
-                        <Table.Td>{supplier.contactPerson}</Table.Td>
+                        <Table.Td>{supplier.contactName}</Table.Td>
                         <Table.Td>{supplier.phone}</Table.Td>
                         <Table.Td>{supplier.email}</Table.Td>
                         <Table.Td>{`${supplier.city}, ${supplier.country}`}</Table.Td>
@@ -513,7 +513,7 @@ export function SuppliersPage() {
                     .map((supplier) => (
                       <Table.Tr key={supplier.id}>
                         <Table.Td>{supplier.name}</Table.Td>
-                        <Table.Td>{supplier.contactPerson}</Table.Td>
+                        <Table.Td>{supplier.contactName}</Table.Td>
                         <Table.Td>{supplier.phone}</Table.Td>
                         <Table.Td>{supplier.email}</Table.Td>
                         <Table.Td>{`${supplier.city}, ${supplier.country}`}</Table.Td>
@@ -558,7 +558,7 @@ export function SuppliersPage() {
               <TextInput
                 label="Contact Person"
                 placeholder="Enter contact person name"
-                {...form.getInputProps('contactPerson')}
+                {...form.getInputProps('contactName')}
               />
             </Grid.Col>
             <Grid.Col span={6}>
