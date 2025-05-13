@@ -21,6 +21,7 @@ import {
   Progress,
   Tabs,
   Table,
+  SegmentedControl,
 } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import { useAuthStore } from '../../../store/authStore';
@@ -39,8 +40,21 @@ import {
   IconShoppingCart,
   IconTruckDelivery,
   IconReportAnalytics,
+  IconCalendar,
 } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
+import {
+  addDays,
+  startOfDay,
+  endOfDay,
+  subDays,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from 'date-fns';
 
 // Define types
 interface AnalyticsSummary {
@@ -69,6 +83,7 @@ const AnalyticsPage = () => {
     new Date(new Date().getFullYear(), new Date().getMonth(), 1), // First day of current month
     new Date(), // Today
   ]);
+  const [dateRangeType, setDateRangeType] = useState<string>('custom');
   const [activeTab, setActiveTab] = useState<string | null>('overview');
   const [analyticsSummary, setAnalyticsSummary] = useState<AnalyticsSummary>({
     salesTrend: [],
@@ -87,6 +102,35 @@ const AnalyticsPage = () => {
       expiringProducts: 0,
     },
   });
+
+  // Set date range based on selected type
+  const handleDateRangeTypeChange = (value: string) => {
+    setDateRangeType(value);
+    const today = new Date();
+
+    switch (value) {
+      case 'daily':
+        setDateRange([startOfDay(today), endOfDay(today)]);
+        break;
+      case 'weekly':
+        setDateRange([
+          startOfWeek(today, { weekStartsOn: 0 }),
+          endOfWeek(today, { weekStartsOn: 0 }),
+        ]);
+        break;
+      case 'monthly':
+        setDateRange([startOfMonth(today), endOfMonth(today)]);
+        break;
+      case 'yearly':
+        setDateRange([startOfYear(today), endOfYear(today)]);
+        break;
+      case 'custom':
+        // Keep the current date range for custom
+        break;
+      default:
+        break;
+    }
+  };
 
   // Fetch analytics data from API
   const fetchAnalyticsData = async () => {
@@ -155,7 +199,7 @@ const AnalyticsPage = () => {
   // Load data on component mount and when date range changes
   useEffect(() => {
     fetchAnalyticsData();
-  }, [dateRange, activeTab]);
+  }, [dateRange, dateRangeType, activeTab]);
 
   return (
     <Container size="xl" px="xs">
@@ -168,40 +212,75 @@ const AnalyticsPage = () => {
         </Group>
 
         {/* Date Range Picker */}
-        <Group mb="md">
-          <DatePicker
-            type="range"
-            label="Date Range"
-            placeholder="Select date range"
-            value={dateRange}
-            onChange={setDateRange}
-            style={{ flex: 1 }}
-            size="md"
-            radius="md"
-            clearable={false}
-            firstDayOfWeek={0}
-            styles={{
-              calendarHeader: { marginBottom: 10 },
-              monthCell: { padding: '5px 10px' },
-              yearCell: { padding: '5px 10px' },
-              day: { borderRadius: 4 },
-              weekday: { fontWeight: 600 },
-              weekend: { color: 'var(--mantine-color-red-6)' },
-              calendarHeaderControl: {
-                borderRadius: 4,
-                '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
-              },
-              monthPickerControl: {
-                borderRadius: 4,
-                '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
-              },
-              yearPickerControl: {
-                borderRadius: 4,
-                '&:hover': { backgroundColor: 'var(--mantine-color-blue-0)' },
-              },
-            }}
-          />
-        </Group>
+        <Stack spacing="md" mb="md">
+          <Group>
+            <Text weight={500}>Date Range:</Text>
+            <SegmentedControl
+              value={dateRangeType}
+              onChange={handleDateRangeTypeChange}
+              data={[
+                { label: 'Daily', value: 'daily' },
+                { label: 'Weekly', value: 'weekly' },
+                { label: 'Monthly', value: 'monthly' },
+                { label: 'Yearly', value: 'yearly' },
+                { label: 'Custom', value: 'custom' },
+              ]}
+            />
+          </Group>
+
+          <Group>
+            {dateRangeType === 'custom' ? (
+              <DatePicker
+                type="range"
+                label="Custom Date Range"
+                placeholder="Select date range"
+                value={dateRange}
+                onChange={setDateRange}
+                style={{ flex: 1 }}
+                size="md"
+                radius="md"
+                clearable={false}
+                firstDayOfWeek={0}
+                styles={{
+                  calendarHeader: { marginBottom: 10 },
+                  monthCell: { padding: '5px 10px' },
+                  yearCell: { padding: '5px 10px' },
+                  day: { borderRadius: 4 },
+                  weekday: { fontWeight: 600 },
+                  weekend: { color: 'var(--mantine-color-red-6)' },
+                  calendarHeaderControl: {
+                    borderRadius: 4,
+                    '&:hover': {
+                      backgroundColor: 'var(--mantine-color-blue-0)',
+                    },
+                  },
+                  monthPickerControl: {
+                    borderRadius: 4,
+                    '&:hover': {
+                      backgroundColor: 'var(--mantine-color-blue-0)',
+                    },
+                  },
+                  yearPickerControl: {
+                    borderRadius: 4,
+                    '&:hover': {
+                      backgroundColor: 'var(--mantine-color-blue-0)',
+                    },
+                  },
+                }}
+              />
+            ) : (
+              <Text>
+                <IconCalendar
+                  size={16}
+                  style={{ verticalAlign: 'middle', marginRight: 5 }}
+                />
+                {dateRange[0] && dateRange[1]
+                  ? `${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`
+                  : 'Select date range'}
+              </Text>
+            )}
+          </Group>
+        </Stack>
 
         {/* Error Message */}
         {error && (

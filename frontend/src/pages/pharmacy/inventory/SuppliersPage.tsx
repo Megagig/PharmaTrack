@@ -18,7 +18,7 @@ import {
   Alert,
   Badge,
   Select,
-  Tabs
+  Tabs,
 } from '@mantine/core';
 import {
   IconPlus,
@@ -33,7 +33,7 @@ import {
   IconMail,
   IconMapPin,
   IconSortAscending,
-  IconSortDescending
+  IconSortDescending,
 } from '@tabler/icons-react';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
@@ -72,13 +72,15 @@ export function SuppliersPage() {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [sortField, setSortField] = useState<string>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  
+
   const [opened, { open, close }] = useDisclosure(false);
   const [editMode, setEditMode] = useState(false);
-  const [currentSupplierId, setCurrentSupplierId] = useState<string | null>(null);
+  const [currentSupplierId, setCurrentSupplierId] = useState<string | null>(
+    null
+  );
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
   const [supplierToDelete, setSupplierToDelete] = useState<string | null>(null);
-  
+
   const ITEMS_PER_PAGE = 10;
 
   const form = useForm({
@@ -95,7 +97,7 @@ export function SuppliersPage() {
       taxId: '',
       paymentTerms: '',
       notes: '',
-      status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE'
+      status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE',
     },
     validate: {
       name: (value) => (value.trim().length > 0 ? null : 'Name is required'),
@@ -141,7 +143,9 @@ export function SuppliersPage() {
       filtered = filtered.filter(
         (supplier) =>
           supplier.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          supplier.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          supplier.contactName
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
           supplier.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
           supplier.phone.includes(searchQuery)
       );
@@ -149,17 +153,19 @@ export function SuppliersPage() {
 
     // Apply status filter
     if (statusFilter) {
-      filtered = filtered.filter((supplier) => supplier.status === statusFilter);
+      filtered = filtered.filter(
+        (supplier) => supplier.status === statusFilter
+      );
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
       const fieldA = a[sortField as keyof Supplier];
       const fieldB = b[sortField as keyof Supplier];
-      
+
       if (typeof fieldA === 'string' && typeof fieldB === 'string') {
-        return sortDirection === 'asc' 
-          ? fieldA.localeCompare(fieldB) 
+        return sortDirection === 'asc'
+          ? fieldA.localeCompare(fieldB)
           : fieldB.localeCompare(fieldA);
       } else {
         // Handle numeric fields
@@ -210,11 +216,14 @@ export function SuppliersPage() {
       close();
       form.reset();
       fetchSuppliers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving supplier:', error);
+      const errorMessage =
+        error.response?.data?.message ||
+        'Failed to save supplier. Please try again.';
       notifications.show({
         title: 'Error',
-        message: 'Failed to save supplier. Please try again.',
+        message: errorMessage,
         color: 'red',
       });
     }
@@ -236,7 +245,7 @@ export function SuppliersPage() {
       taxId: supplier.taxId || '',
       paymentTerms: supplier.paymentTerms || '',
       notes: supplier.notes || '',
-      status: supplier.status
+      status: supplier.status,
     });
     open();
   };
@@ -250,7 +259,7 @@ export function SuppliersPage() {
 
   const handleDeleteSupplier = async () => {
     if (!supplierToDelete) return;
-    
+
     try {
       await axios.delete(`${API_URL}/suppliers/${supplierToDelete}`, {
         headers: {
@@ -268,7 +277,8 @@ export function SuppliersPage() {
       console.error('Error deleting supplier:', error);
       notifications.show({
         title: 'Error',
-        message: 'Failed to delete supplier. It may be referenced by purchases.',
+        message:
+          'Failed to delete supplier. It may be referenced by purchases.',
         color: 'red',
       });
     }
@@ -302,10 +312,16 @@ export function SuppliersPage() {
           <Tabs.Tab value="all" leftSection={<IconUsers size={16} />}>
             All Suppliers
           </Tabs.Tab>
-          <Tabs.Tab value="active" leftSection={<IconBuildingStore size={16} />}>
+          <Tabs.Tab
+            value="active"
+            leftSection={<IconBuildingStore size={16} />}
+          >
             Active Suppliers
           </Tabs.Tab>
-          <Tabs.Tab value="inactive" leftSection={<IconBuildingStore size={16} />}>
+          <Tabs.Tab
+            value="inactive"
+            leftSection={<IconBuildingStore size={16} />}
+          >
             Inactive Suppliers
           </Tabs.Tab>
         </Tabs.List>
@@ -324,22 +340,22 @@ export function SuppliersPage() {
                   placeholder="Filter by status"
                   data={[
                     { value: 'ACTIVE', label: 'Active' },
-                    { value: 'INACTIVE', label: 'Inactive' }
+                    { value: 'INACTIVE', label: 'Inactive' },
                   ]}
                   value={statusFilter}
                   onChange={setStatusFilter}
                   clearable
                 />
-                <Button 
-                  variant="subtle" 
+                <Button
+                  variant="subtle"
                   leftSection={<IconRefresh size={16} />}
                   onClick={resetFilters}
                 >
                   Reset
                 </Button>
               </Group>
-              <Button 
-                leftSection={<IconPlus size={16} />} 
+              <Button
+                leftSection={<IconPlus size={16} />}
                 onClick={handleOpenCreateModal}
               >
                 Add Supplier
@@ -347,12 +363,19 @@ export function SuppliersPage() {
             </Group>
 
             {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '20px',
+                }}
+              >
                 <Loader />
               </div>
             ) : paginatedSuppliers.length === 0 ? (
               <Alert title="No suppliers found" color="gray">
-                No suppliers match your current filters. Try adjusting your search criteria or add a new supplier.
+                No suppliers match your current filters. Try adjusting your
+                search criteria or add a new supplier.
               </Alert>
             ) : (
               <>
@@ -360,19 +383,33 @@ export function SuppliersPage() {
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th>
-                        <Group gap={5} onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
+                        <Group
+                          gap={5}
+                          onClick={() => handleSort('name')}
+                          style={{ cursor: 'pointer' }}
+                        >
                           Name
-                          {sortField === 'name' && (
-                            sortDirection === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                          )}
+                          {sortField === 'name' &&
+                            (sortDirection === 'asc' ? (
+                              <IconSortAscending size={16} />
+                            ) : (
+                              <IconSortDescending size={16} />
+                            ))}
                         </Group>
                       </Table.Th>
                       <Table.Th>
-                        <Group gap={5} onClick={() => handleSort('contactName')} style={{ cursor: 'pointer' }}>
+                        <Group
+                          gap={5}
+                          onClick={() => handleSort('contactName')}
+                          style={{ cursor: 'pointer' }}
+                        >
                           Contact Person
-                          {sortField === 'contactName' && (
-                            sortDirection === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                          )}
+                          {sortField === 'contactName' &&
+                            (sortDirection === 'asc' ? (
+                              <IconSortAscending size={16} />
+                            ) : (
+                              <IconSortDescending size={16} />
+                            ))}
                         </Group>
                       </Table.Th>
                       <Table.Th>
@@ -397,7 +434,11 @@ export function SuppliersPage() {
                         <Table.Td>{supplier.email}</Table.Td>
                         <Table.Td>{`${supplier.city}, ${supplier.country}`}</Table.Td>
                         <Table.Td>
-                          <Badge color={supplier.status === 'ACTIVE' ? 'green' : 'gray'}>
+                          <Badge
+                            color={
+                              supplier.status === 'ACTIVE' ? 'green' : 'gray'
+                            }
+                          >
                             {supplier.status}
                           </Badge>
                         </Table.Td>
@@ -409,13 +450,13 @@ export function SuppliersPage() {
                               </ActionIcon>
                             </Menu.Target>
                             <Menu.Dropdown>
-                              <Menu.Item 
+                              <Menu.Item
                                 leftSection={<IconEdit size={16} />}
                                 onClick={() => handleEditSupplier(supplier)}
                               >
                                 Edit
                               </Menu.Item>
-                              <Menu.Item 
+                              <Menu.Item
                                 leftSection={<IconTrash size={16} />}
                                 color="red"
                                 onClick={() => openDeleteModal(supplier.id)}
@@ -431,7 +472,7 @@ export function SuppliersPage() {
                 </Table>
 
                 <Group justify="center" mt="md">
-                  <Pagination 
+                  <Pagination
                     value={currentPage}
                     onChange={setCurrentPage}
                     total={totalPages}
@@ -444,9 +485,17 @@ export function SuppliersPage() {
 
         <Tabs.Panel value="active">
           <Card shadow="sm" p="md" radius="md">
-            <Title order={4} mb="md">Active Suppliers</Title>
+            <Title order={4} mb="md">
+              Active Suppliers
+            </Title>
             {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '20px',
+                }}
+              >
                 <Loader />
               </div>
             ) : (
@@ -463,7 +512,7 @@ export function SuppliersPage() {
                 </Table.Thead>
                 <Table.Tbody>
                   {suppliers
-                    .filter(s => s.status === 'ACTIVE')
+                    .filter((s) => s.status === 'ACTIVE')
                     .map((supplier) => (
                       <Table.Tr key={supplier.id}>
                         <Table.Td>{supplier.name}</Table.Td>
@@ -486,12 +535,21 @@ export function SuppliersPage() {
 
         <Tabs.Panel value="inactive">
           <Card shadow="sm" p="md" radius="md">
-            <Title order={4} mb="md">Inactive Suppliers</Title>
+            <Title order={4} mb="md">
+              Inactive Suppliers
+            </Title>
             {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '20px',
+                }}
+              >
                 <Loader />
               </div>
-            ) : suppliers.filter(s => s.status === 'INACTIVE').length === 0 ? (
+            ) : suppliers.filter((s) => s.status === 'INACTIVE').length ===
+              0 ? (
               <Alert title="No inactive suppliers" color="gray">
                 There are no inactive suppliers in the system.
               </Alert>
@@ -509,7 +567,7 @@ export function SuppliersPage() {
                 </Table.Thead>
                 <Table.Tbody>
                   {suppliers
-                    .filter(s => s.status === 'INACTIVE')
+                    .filter((s) => s.status === 'INACTIVE')
                     .map((supplier) => (
                       <Table.Tr key={supplier.id}>
                         <Table.Td>{supplier.name}</Table.Td>
@@ -518,11 +576,14 @@ export function SuppliersPage() {
                         <Table.Td>{supplier.email}</Table.Td>
                         <Table.Td>{`${supplier.city}, ${supplier.country}`}</Table.Td>
                         <Table.Td>
-                          <Button 
-                            size="xs" 
+                          <Button
+                            size="xs"
                             variant="outline"
                             onClick={() => {
-                              handleEditSupplier({...supplier, status: 'ACTIVE'});
+                              handleEditSupplier({
+                                ...supplier,
+                                status: 'ACTIVE',
+                              });
                             }}
                           >
                             Activate
@@ -538,10 +599,10 @@ export function SuppliersPage() {
       </Tabs>
 
       {/* Create/Edit Supplier Modal */}
-      <Modal 
-        opened={opened} 
-        onClose={close} 
-        title={editMode ? "Edit Supplier" : "Add New Supplier"}
+      <Modal
+        opened={opened}
+        onClose={close}
+        title={editMode ? 'Edit Supplier' : 'Add New Supplier'}
         size="lg"
       >
         <form onSubmit={form.onSubmit(handleCreateSupplier)}>
@@ -632,7 +693,7 @@ export function SuppliersPage() {
                 placeholder="Select status"
                 data={[
                   { value: 'ACTIVE', label: 'Active' },
-                  { value: 'INACTIVE', label: 'Inactive' }
+                  { value: 'INACTIVE', label: 'Inactive' },
                 ]}
                 required
                 {...form.getInputProps('status')}
@@ -648,7 +709,9 @@ export function SuppliersPage() {
           </Grid>
 
           <Group justify="flex-end" mt="md">
-            <Button variant="light" onClick={close}>Cancel</Button>
+            <Button variant="light" onClick={close}>
+              Cancel
+            </Button>
             <Button type="submit">{editMode ? 'Update' : 'Create'}</Button>
           </Group>
         </form>
@@ -661,7 +724,10 @@ export function SuppliersPage() {
         title="Confirm Deletion"
         size="sm"
       >
-        <Text mb="md">Are you sure you want to delete this supplier? This action cannot be undone.</Text>
+        <Text mb="md">
+          Are you sure you want to delete this supplier? This action cannot be
+          undone.
+        </Text>
         <Group justify="flex-end">
           <Button variant="light" onClick={() => setDeleteModalOpened(false)}>
             Cancel

@@ -22,7 +22,7 @@ import {
   Textarea,
   Paper,
   CloseButton,
-  Alert
+  Alert,
 } from '@mantine/core';
 import {
   IconPlus,
@@ -34,7 +34,7 @@ import {
   IconFilter,
   IconSortAscending,
   IconSortDescending,
-  IconReceipt
+  IconReceipt,
 } from '@tabler/icons-react';
 import { useDisclosure } from '@mantine/hooks';
 import { useForm } from '@mantine/form';
@@ -80,7 +80,7 @@ export function SalesPage() {
   const [itemQuantity, setItemQuantity] = useState<number>(1);
   const [itemPrice, setItemPrice] = useState<number>(0);
   const [itemDiscount, setItemDiscount] = useState<number>(0);
-  
+
   // Sale form
   const form = useForm({
     initialValues: {
@@ -93,23 +93,36 @@ export function SalesPage() {
       paymentMethod: 'CASH',
       discount: 0,
       tax: 0,
-      notes: ''
+      notes: '',
     },
     validate: {
       customerName: (value) => (value ? null : 'Customer name is required'),
       invoiceNumber: (value) => (value ? null : 'Invoice number is required'),
       saleDate: (value) => (value ? null : 'Sale date is required'),
       paymentStatus: (value) => (value ? null : 'Payment status is required'),
-      paymentMethod: (value) => (value ? null : 'Payment method is required')
-    }
+      paymentMethod: (value) => (value ? null : 'Payment method is required'),
+    },
   });
 
-  const [detailsOpened, { open: openDetails, close: closeDetails }] = useDisclosure(false);
-  const [formOpened, { open: openForm, close: closeForm }] = useDisclosure(false);
+  const [detailsOpened, { open: openDetails, close: closeDetails }] =
+    useDisclosure(false);
+  const [formOpened, { open: openForm, close: closeForm }] =
+    useDisclosure(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
-  const [products, setProducts] = useState<{value: string, label: string, price: number}[]>([]);
-  const [formItems, setFormItems] = useState<{productId: string, productName: string, quantity: number, unitPrice: number, discount: number, totalPrice: number}[]>([]);
+  const [products, setProducts] = useState<
+    { value: string; label: string; price: number }[]
+  >([]);
+  const [formItems, setFormItems] = useState<
+    {
+      productId: string;
+      productName: string;
+      quantity: number;
+      unitPrice: number;
+      discount: number;
+      totalPrice: number;
+    }[]
+  >([]);
   const [editMode, setEditMode] = useState(false);
   const [currentSaleId, setCurrentSaleId] = useState<string | null>(null);
   const { token } = useAuthStore();
@@ -119,10 +132,12 @@ export function SalesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string | null>(null);
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string | null>(
+    null
+  );
   const [sortField, setSortField] = useState<string>('saleDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  
+
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -134,9 +149,11 @@ export function SalesPage() {
   const isToday = (dateString: string) => {
     const today = new Date();
     const date = new Date(dateString);
-    return date.getDate() === today.getDate() &&
+    return (
+      date.getDate() === today.getDate() &&
       date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear();
+      date.getFullYear() === today.getFullYear()
+    );
   };
 
   useEffect(() => {
@@ -171,11 +188,13 @@ export function SalesPage() {
           Authorization: `Bearer ${token}`,
         },
       });
-      const productOptions = response.data.data.products.map((product: any) => ({
-        value: product.id,
-        label: product.name,
-        price: product.retailPrice
-      }));
+      const productOptions = response.data.data.products.map(
+        (product: any) => ({
+          value: product.id,
+          label: product.name,
+          price: product.retailPrice,
+        })
+      );
       setProducts(productOptions);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -189,7 +208,7 @@ export function SalesPage() {
     form.setValues({
       ...form.values,
       saleDate: new Date().toISOString().split('T')[0],
-      invoiceNumber: generateInvoiceNumber()
+      invoiceNumber: generateInvoiceNumber(),
     });
     setFormItems([]);
     openForm();
@@ -200,14 +219,16 @@ export function SalesPage() {
     const year = date.getFullYear().toString().slice(2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
     return `INV-${year}${month}${day}-${random}`;
   };
 
   const handleEditSale = async (sale: Sale) => {
     setEditMode(true);
     setCurrentSaleId(sale.id);
-    
+
     form.setValues({
       customerName: sale.customerName,
       customerPhone: sale.customerPhone || '',
@@ -218,25 +239,25 @@ export function SalesPage() {
       paymentMethod: sale.paymentMethod,
       discount: sale.discount,
       tax: sale.tax,
-      notes: sale.notes || ''
+      notes: sale.notes || '',
     });
-    
+
     try {
       const response = await axios.get(`${API_URL}/sales/${sale.id}/items`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       const items = response.data.data.items.map((item: SaleItem) => ({
         productId: item.productId,
         productName: item.productName,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         discount: item.discount || 0,
-        totalPrice: item.totalPrice
+        totalPrice: item.totalPrice,
       }));
-      
+
       setFormItems(items);
       openForm();
     } catch (error) {
@@ -258,24 +279,24 @@ export function SalesPage() {
       });
       return;
     }
-    
-    const product = products.find(p => p.value === selectedProduct);
+
+    const product = products.find((p) => p.value === selectedProduct);
     if (!product) return;
-    
+
     const price = itemPrice > 0 ? itemPrice : product.price;
-    const totalPrice = (price * itemQuantity) - itemDiscount;
-    
+    const totalPrice = price * itemQuantity - itemDiscount;
+
     const newItem = {
       productId: selectedProduct,
       productName: product.label,
       quantity: itemQuantity,
       unitPrice: price,
       discount: itemDiscount,
-      totalPrice: totalPrice
+      totalPrice: totalPrice,
     };
-    
+
     setFormItems([...formItems, newItem]);
-    
+
     // Reset form
     setSelectedProduct(null);
     setItemQuantity(1);
@@ -294,7 +315,10 @@ export function SalesPage() {
   };
 
   const calculateTotalDiscount = () => {
-    const itemsDiscount = formItems.reduce((total, item) => total + item.discount, 0);
+    const itemsDiscount = formItems.reduce(
+      (total, item) => total + item.discount,
+      0
+    );
     return itemsDiscount + (form.values.discount || 0);
   };
 
@@ -314,18 +338,18 @@ export function SalesPage() {
       });
       return;
     }
-    
+
     const saleData = {
       ...values,
       totalAmount: calculateTotalAmount(),
-      items: formItems.map(item => ({
+      items: formItems.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-        discount: item.discount
-      }))
+        discount: item.discount,
+      })),
     };
-    
+
     try {
       if (editMode && currentSaleId) {
         await axios.patch(`${API_URL}/sales/${currentSaleId}`, saleData, {
@@ -350,16 +374,19 @@ export function SalesPage() {
           color: 'teal',
         });
       }
-      
+
       closeForm();
       form.reset();
       setFormItems([]);
       fetchSales();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving sale:', error);
+      const errorMessage =
+        error.response?.data?.message ||
+        'Failed to save sale. Please try again.';
       notifications.show({
         title: 'Error',
-        message: 'Failed to save sale. Please try again.',
+        message: errorMessage,
         color: 'red',
       });
     }
@@ -367,7 +394,7 @@ export function SalesPage() {
 
   const viewSaleDetails = async (sale: Sale) => {
     setSelectedSale(sale);
-    
+
     try {
       const response = await axios.get(`${API_URL}/sales/${sale.id}/items`, {
         headers: {
@@ -384,26 +411,33 @@ export function SalesPage() {
       });
       setSaleItems([]);
     }
-    
+
     openDetails();
   };
 
-  const updateSalePaymentStatus = async (saleId: string, status: 'PAID' | 'UNPAID' | 'PARTIAL') => {
+  const updateSalePaymentStatus = async (
+    saleId: string,
+    status: 'PAID' | 'UNPAID' | 'PARTIAL'
+  ) => {
     try {
-      await axios.patch(`${API_URL}/sales/${saleId}`, {
-        paymentStatus: status
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      await axios.patch(
+        `${API_URL}/sales/${saleId}`,
+        {
+          paymentStatus: status,
         },
-      });
-      
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       notifications.show({
         title: 'Success',
         message: `Sale marked as ${status.toLowerCase()}`,
         color: 'teal',
       });
-      
+
       // Refresh sales data
       fetchSales();
     } catch (error) {
@@ -423,32 +457,39 @@ export function SalesPage() {
     if (searchQuery) {
       filtered = filtered.filter(
         (sale) =>
-          sale.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          sale.invoiceNumber
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
           sale.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (sale.customerPhone && sale.customerPhone.includes(searchQuery)) ||
-          (sale.customerEmail && sale.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()))
+          (sale.customerEmail &&
+            sale.customerEmail
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()))
       );
     }
 
     // Apply payment status filter
     if (paymentStatusFilter) {
-      filtered = filtered.filter((sale) => sale.paymentStatus === paymentStatusFilter);
+      filtered = filtered.filter(
+        (sale) => sale.paymentStatus === paymentStatusFilter
+      );
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
       const fieldA = a[sortField as keyof Sale];
       const fieldB = b[sortField as keyof Sale];
-      
+
       if (typeof fieldA === 'string' && typeof fieldB === 'string') {
         // Handle date fields specially
         if (sortField === 'saleDate') {
-          return sortDirection === 'asc' 
-            ? new Date(fieldA).getTime() - new Date(fieldB).getTime() 
+          return sortDirection === 'asc'
+            ? new Date(fieldA).getTime() - new Date(fieldB).getTime()
             : new Date(fieldB).getTime() - new Date(fieldA).getTime();
         }
-        return sortDirection === 'asc' 
-          ? fieldA.localeCompare(fieldB) 
+        return sortDirection === 'asc'
+          ? fieldA.localeCompare(fieldB)
           : fieldB.localeCompare(fieldA);
       } else {
         // Handle numeric fields
@@ -530,23 +571,23 @@ export function SalesPage() {
                   data={[
                     { value: 'PAID', label: 'Paid' },
                     { value: 'UNPAID', label: 'Unpaid' },
-                    { value: 'PARTIAL', label: 'Partial' }
+                    { value: 'PARTIAL', label: 'Partial' },
                   ]}
                   value={paymentStatusFilter}
                   onChange={setPaymentStatusFilter}
                   clearable
                   leftSection={<IconFilter size={16} />}
                 />
-                <Button 
-                  variant="subtle" 
+                <Button
+                  variant="subtle"
                   leftSection={<IconRefresh size={16} />}
                   onClick={resetFilters}
                 >
                   Reset
                 </Button>
               </Group>
-              <Button 
-                leftSection={<IconPlus size={16} />} 
+              <Button
+                leftSection={<IconPlus size={16} />}
                 onClick={handleOpenCreateModal}
               >
                 New Sale
@@ -554,7 +595,13 @@ export function SalesPage() {
             </Group>
 
             {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '20px',
+                }}
+              >
                 <Loader />
               </div>
             ) : paginatedSales.length === 0 ? (
@@ -567,35 +614,63 @@ export function SalesPage() {
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th>
-                        <Group gap={5} onClick={() => handleSort('invoiceNumber')} style={{ cursor: 'pointer' }}>
+                        <Group
+                          gap={5}
+                          onClick={() => handleSort('invoiceNumber')}
+                          style={{ cursor: 'pointer' }}
+                        >
                           Invoice #
-                          {sortField === 'invoiceNumber' && (
-                            sortDirection === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                          )}
+                          {sortField === 'invoiceNumber' &&
+                            (sortDirection === 'asc' ? (
+                              <IconSortAscending size={16} />
+                            ) : (
+                              <IconSortDescending size={16} />
+                            ))}
                         </Group>
                       </Table.Th>
                       <Table.Th>
-                        <Group gap={5} onClick={() => handleSort('saleDate')} style={{ cursor: 'pointer' }}>
+                        <Group
+                          gap={5}
+                          onClick={() => handleSort('saleDate')}
+                          style={{ cursor: 'pointer' }}
+                        >
                           Date
-                          {sortField === 'saleDate' && (
-                            sortDirection === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                          )}
+                          {sortField === 'saleDate' &&
+                            (sortDirection === 'asc' ? (
+                              <IconSortAscending size={16} />
+                            ) : (
+                              <IconSortDescending size={16} />
+                            ))}
                         </Group>
                       </Table.Th>
                       <Table.Th>
-                        <Group gap={5} onClick={() => handleSort('customerName')} style={{ cursor: 'pointer' }}>
+                        <Group
+                          gap={5}
+                          onClick={() => handleSort('customerName')}
+                          style={{ cursor: 'pointer' }}
+                        >
                           Customer
-                          {sortField === 'customerName' && (
-                            sortDirection === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                          )}
+                          {sortField === 'customerName' &&
+                            (sortDirection === 'asc' ? (
+                              <IconSortAscending size={16} />
+                            ) : (
+                              <IconSortDescending size={16} />
+                            ))}
                         </Group>
                       </Table.Th>
                       <Table.Th>
-                        <Group gap={5} onClick={() => handleSort('totalAmount')} style={{ cursor: 'pointer' }}>
+                        <Group
+                          gap={5}
+                          onClick={() => handleSort('totalAmount')}
+                          style={{ cursor: 'pointer' }}
+                        >
                           Amount
-                          {sortField === 'totalAmount' && (
-                            sortDirection === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                          )}
+                          {sortField === 'totalAmount' &&
+                            (sortDirection === 'asc' ? (
+                              <IconSortAscending size={16} />
+                            ) : (
+                              <IconSortDescending size={16} />
+                            ))}
                         </Group>
                       </Table.Th>
                       <Table.Th>Payment Status</Table.Th>
@@ -607,10 +682,14 @@ export function SalesPage() {
                     {paginatedSales.map((sale) => (
                       <Table.Tr key={sale.id}>
                         <Table.Td>{sale.invoiceNumber}</Table.Td>
-                        <Table.Td>{format(new Date(sale.saleDate), 'MMM dd, yyyy')}</Table.Td>
+                        <Table.Td>
+                          {format(new Date(sale.saleDate), 'MMM dd, yyyy')}
+                        </Table.Td>
                         <Table.Td>{sale.customerName}</Table.Td>
                         <Table.Td>{formatCurrency(sale.totalAmount)}</Table.Td>
-                        <Table.Td>{renderPaymentStatus(sale.paymentStatus)}</Table.Td>
+                        <Table.Td>
+                          {renderPaymentStatus(sale.paymentStatus)}
+                        </Table.Td>
                         <Table.Td>{sale.paymentMethod}</Table.Td>
                         <Table.Td>
                           <Menu position="bottom-end" withArrow>
@@ -620,13 +699,13 @@ export function SalesPage() {
                               </ActionIcon>
                             </Menu.Target>
                             <Menu.Dropdown>
-                              <Menu.Item 
+                              <Menu.Item
                                 leftSection={<IconEye size={16} />}
                                 onClick={() => viewSaleDetails(sale)}
                               >
                                 View Details
                               </Menu.Item>
-                              <Menu.Item 
+                              <Menu.Item
                                 leftSection={<IconEdit size={16} />}
                                 onClick={() => handleEditSale(sale)}
                               >
@@ -641,7 +720,7 @@ export function SalesPage() {
                 </Table>
 
                 <Group justify="center" mt="md">
-                  <Pagination 
+                  <Pagination
                     value={currentPage}
                     onChange={setCurrentPage}
                     total={totalPages}
@@ -654,12 +733,20 @@ export function SalesPage() {
 
         <Tabs.Panel value="today">
           <Card shadow="sm" p="md" radius="md" mb="md">
-            <Title order={4} mb="md">Today's Sales</Title>
+            <Title order={4} mb="md">
+              Today's Sales
+            </Title>
             {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '20px',
+                }}
+              >
                 <Loader />
               </div>
-            ) : sales.filter(s => isToday(s.saleDate)).length === 0 ? (
+            ) : sales.filter((s) => isToday(s.saleDate)).length === 0 ? (
               <Text c="dimmed" ta="center" py="xl">
                 No sales recorded today.
               </Text>
@@ -679,20 +766,30 @@ export function SalesPage() {
                   </Table.Thead>
                   <Table.Tbody>
                     {sales
-                      .filter(s => isToday(s.saleDate))
-                      .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime())
+                      .filter((s) => isToday(s.saleDate))
+                      .sort(
+                        (a, b) =>
+                          new Date(b.saleDate).getTime() -
+                          new Date(a.saleDate).getTime()
+                      )
                       .map((sale) => (
                         <Table.Tr key={sale.id}>
                           <Table.Td>{sale.invoiceNumber}</Table.Td>
-                          <Table.Td>{format(new Date(sale.saleDate), 'h:mm a')}</Table.Td>
+                          <Table.Td>
+                            {format(new Date(sale.saleDate), 'h:mm a')}
+                          </Table.Td>
                           <Table.Td>{sale.customerName}</Table.Td>
-                          <Table.Td>{formatCurrency(sale.totalAmount)}</Table.Td>
-                          <Table.Td>{renderPaymentStatus(sale.paymentStatus)}</Table.Td>
+                          <Table.Td>
+                            {formatCurrency(sale.totalAmount)}
+                          </Table.Td>
+                          <Table.Td>
+                            {renderPaymentStatus(sale.paymentStatus)}
+                          </Table.Td>
                           <Table.Td>{sale.paymentMethod}</Table.Td>
                           <Table.Td>
                             <Group gap="xs">
-                              <Button 
-                                size="xs" 
+                              <Button
+                                size="xs"
                                 variant="outline"
                                 onClick={() => viewSaleDetails(sale)}
                               >
@@ -711,7 +808,7 @@ export function SalesPage() {
                     <Text size="lg" fw={700}>
                       {formatCurrency(
                         sales
-                          .filter(s => isToday(s.saleDate))
+                          .filter((s) => isToday(s.saleDate))
                           .reduce((sum, sale) => sum + sale.totalAmount, 0)
                       )}
                     </Text>
@@ -719,7 +816,7 @@ export function SalesPage() {
                   <div>
                     <Text fw={500}>Number of Sales:</Text>
                     <Text size="lg" fw={700} ta="center">
-                      {sales.filter(s => isToday(s.saleDate)).length}
+                      {sales.filter((s) => isToday(s.saleDate)).length}
                     </Text>
                   </div>
                 </Group>
@@ -730,12 +827,21 @@ export function SalesPage() {
 
         <Tabs.Panel value="unpaid">
           <Card shadow="sm" p="md" radius="md" mb="md">
-            <Title order={4} mb="md">Unpaid Sales</Title>
+            <Title order={4} mb="md">
+              Unpaid Sales
+            </Title>
             {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '20px',
+                }}
+              >
                 <Loader />
               </div>
-            ) : sales.filter(s => s.paymentStatus === 'UNPAID').length === 0 ? (
+            ) : sales.filter((s) => s.paymentStatus === 'UNPAID').length ===
+              0 ? (
               <Text c="dimmed" ta="center" py="xl">
                 No unpaid sales found.
               </Text>
@@ -752,27 +858,31 @@ export function SalesPage() {
                 </Table.Thead>
                 <Table.Tbody>
                   {sales
-                    .filter(s => s.paymentStatus === 'UNPAID')
+                    .filter((s) => s.paymentStatus === 'UNPAID')
                     .map((sale) => (
                       <Table.Tr key={sale.id}>
                         <Table.Td>{sale.invoiceNumber}</Table.Td>
-                        <Table.Td>{format(new Date(sale.saleDate), 'MMM dd, yyyy')}</Table.Td>
+                        <Table.Td>
+                          {format(new Date(sale.saleDate), 'MMM dd, yyyy')}
+                        </Table.Td>
                         <Table.Td>{sale.customerName}</Table.Td>
                         <Table.Td>{formatCurrency(sale.totalAmount)}</Table.Td>
                         <Table.Td>
                           <Group gap="xs">
-                            <Button 
-                              size="xs" 
+                            <Button
+                              size="xs"
                               variant="outline"
                               onClick={() => viewSaleDetails(sale)}
                             >
                               View
                             </Button>
-                            <Button 
-                              size="xs" 
-                              variant="filled" 
+                            <Button
+                              size="xs"
+                              variant="filled"
                               color="green"
-                              onClick={() => updateSalePaymentStatus(sale.id, 'PAID')}
+                              onClick={() =>
+                                updateSalePaymentStatus(sale.id, 'PAID')
+                              }
                             >
                               Mark as Paid
                             </Button>
@@ -803,23 +913,25 @@ export function SalesPage() {
               </Grid.Col>
               <Grid.Col span={6}>
                 <Text fw={500}>Date:</Text>
-                <Text>{format(new Date(selectedSale.saleDate), 'MMMM dd, yyyy')}</Text>
+                <Text>
+                  {format(new Date(selectedSale.saleDate), 'MMMM dd, yyyy')}
+                </Text>
               </Grid.Col>
-              
+
               {selectedSale.customerPhone && (
                 <Grid.Col span={6}>
                   <Text fw={500}>Phone:</Text>
                   <Text>{selectedSale.customerPhone}</Text>
                 </Grid.Col>
               )}
-              
+
               {selectedSale.customerEmail && (
                 <Grid.Col span={6}>
                   <Text fw={500}>Email:</Text>
                   <Text>{selectedSale.customerEmail}</Text>
                 </Grid.Col>
               )}
-              
+
               <Grid.Col span={4}>
                 <Text fw={500}>Payment Status:</Text>
                 <Text>{renderPaymentStatus(selectedSale.paymentStatus)}</Text>
@@ -832,7 +944,7 @@ export function SalesPage() {
                 <Text fw={500}>Tax:</Text>
                 <Text>{formatCurrency(selectedSale.tax)}</Text>
               </Grid.Col>
-              
+
               {selectedSale.notes && (
                 <Grid.Col span={12}>
                   <Text fw={500}>Notes:</Text>
@@ -841,7 +953,9 @@ export function SalesPage() {
               )}
             </Grid>
 
-            <Title order={5} mt="md" mb="xs">Sale Items:</Title>
+            <Title order={5} mt="md" mb="xs">
+              Sale Items:
+            </Title>
             {saleItems.length === 0 ? (
               <Text c="dimmed">No items found for this sale.</Text>
             ) : (
@@ -861,7 +975,11 @@ export function SalesPage() {
                       <Table.Td>{item.productName}</Table.Td>
                       <Table.Td>{item.quantity}</Table.Td>
                       <Table.Td>{formatCurrency(item.unitPrice)}</Table.Td>
-                      <Table.Td>{item.discount ? formatCurrency(item.discount) : formatCurrency(0)}</Table.Td>
+                      <Table.Td>
+                        {item.discount
+                          ? formatCurrency(item.discount)
+                          : formatCurrency(0)}
+                      </Table.Td>
                       <Table.Td>{formatCurrency(item.totalPrice)}</Table.Td>
                     </Table.Tr>
                   ))}
@@ -872,7 +990,9 @@ export function SalesPage() {
             <Group justify="space-between" mt="md">
               <div>
                 <Text fw={500}>Subtotal:</Text>
-                <Text>{formatCurrency(selectedSale.totalAmount - selectedSale.tax)}</Text>
+                <Text>
+                  {formatCurrency(selectedSale.totalAmount - selectedSale.tax)}
+                </Text>
               </div>
               <div>
                 <Text fw={500}>Discount:</Text>
@@ -884,14 +1004,16 @@ export function SalesPage() {
               </div>
               <div>
                 <Text fw={500}>Total Amount:</Text>
-                <Text size="lg" fw={700}>{formatCurrency(selectedSale.totalAmount)}</Text>
+                <Text size="lg" fw={700}>
+                  {formatCurrency(selectedSale.totalAmount)}
+                </Text>
               </div>
             </Group>
 
             <Group justify="flex-end" mt="xl">
               {selectedSale.paymentStatus !== 'PAID' && (
-                <Button 
-                  color="green" 
+                <Button
+                  color="green"
                   onClick={() => {
                     updateSalePaymentStatus(selectedSale.id, 'PAID');
                     closeDetails();
@@ -907,7 +1029,7 @@ export function SalesPage() {
           </>
         )}
       </Modal>
-      
+
       {/* Sale form modal */}
       <Modal
         opened={formOpened}
@@ -916,7 +1038,7 @@ export function SalesPage() {
           form.reset();
           setFormItems([]);
         }}
-        title={editMode ? "Edit Sale" : "Create New Sale"}
+        title={editMode ? 'Edit Sale' : 'Create New Sale'}
         size="xl"
       >
         <form onSubmit={form.onSubmit(handleSubmitSale)}>
@@ -966,7 +1088,7 @@ export function SalesPage() {
                 data={[
                   { value: 'PAID', label: 'Paid' },
                   { value: 'UNPAID', label: 'Unpaid' },
-                  { value: 'PARTIAL', label: 'Partial' }
+                  { value: 'PARTIAL', label: 'Partial' },
                 ]}
                 required
                 {...form.getInputProps('paymentStatus')}
@@ -981,7 +1103,7 @@ export function SalesPage() {
                   { value: 'CARD', label: 'Card' },
                   { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
                   { value: 'CHECK', label: 'Check' },
-                  { value: 'CREDIT', label: 'Credit' }
+                  { value: 'CREDIT', label: 'Credit' },
                 ]}
                 required
                 {...form.getInputProps('paymentMethod')}
@@ -1012,8 +1134,10 @@ export function SalesPage() {
             </Grid.Col>
           </Grid>
 
-          <Title order={4} mt="md" mb="sm">Sale Items</Title>
-          
+          <Title order={4} mt="md" mb="sm">
+            Sale Items
+          </Title>
+
           <Group mb="md">
             <Select
               placeholder="Select product"
@@ -1027,21 +1151,27 @@ export function SalesPage() {
               placeholder="Quantity"
               min={1}
               value={itemQuantity}
-              onChange={(val) => setItemQuantity(typeof val === 'number' ? val : 1)}
+              onChange={(val) =>
+                setItemQuantity(typeof val === 'number' ? val : 1)
+              }
               style={{ width: '100px' }}
             />
             <NumberInput
               placeholder="Unit Price"
               min={0}
               value={itemPrice}
-              onChange={(val) => setItemPrice(typeof val === 'number' ? val : 0)}
+              onChange={(val) =>
+                setItemPrice(typeof val === 'number' ? val : 0)
+              }
               style={{ width: '120px' }}
             />
             <NumberInput
               placeholder="Discount"
               min={0}
               value={itemDiscount}
-              onChange={(val) => setItemDiscount(typeof val === 'number' ? val : 0)}
+              onChange={(val) =>
+                setItemDiscount(typeof val === 'number' ? val : 0)
+              }
               style={{ width: '120px' }}
             />
             <Button onClick={addItemToForm}>Add Item</Button>
@@ -1073,7 +1203,7 @@ export function SalesPage() {
                       <Table.Td>{formatCurrency(item.discount)}</Table.Td>
                       <Table.Td>{formatCurrency(item.totalPrice)}</Table.Td>
                       <Table.Td>
-                        <CloseButton 
+                        <CloseButton
                           onClick={() => removeItemFromForm(index)}
                           title="Remove item"
                         />
@@ -1098,14 +1228,18 @@ export function SalesPage() {
                 </div>
                 <div>
                   <Text fw={500}>Total Amount:</Text>
-                  <Text size="lg" fw={700}>{formatCurrency(calculateTotalAmount())}</Text>
+                  <Text size="lg" fw={700}>
+                    {formatCurrency(calculateTotalAmount())}
+                  </Text>
                 </div>
               </Group>
             </Paper>
           )}
 
           <Group justify="flex-end" mt="md">
-            <Button variant="light" onClick={closeForm}>Cancel</Button>
+            <Button variant="light" onClick={closeForm}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={formItems.length === 0}>
               {editMode ? 'Update Sale' : 'Create Sale'}
             </Button>
